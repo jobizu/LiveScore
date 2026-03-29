@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV Viewer</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Barlow:wght@500;600;700&display=swap');
+
+        :root {
+            --bg: #0b121b;
+            --panel: #111b28;
+            --line: #223447;
+            --text: #e8f1fb;
+            --muted: #97abc0;
+            --green: #00cf7b;
+            --danger: #ff647a;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: 'Barlow', sans-serif;
+            color: var(--text);
+            background: radial-gradient(circle at 100% 0%, #0f3354 0%, transparent 35%), linear-gradient(180deg, #091019 0%, #0c1420 100%);
+        }
+
+        .wrap {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .head {
+            border: 1px solid var(--line);
+            background: var(--panel);
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 12px;
+        }
+
+        .head h1 {
+            margin: 0;
+            font-size: 1.3rem;
+        }
+
+        .meta {
+            margin-top: 8px;
+            color: var(--muted);
+            font-size: 0.86rem;
+            word-break: break-all;
+        }
+
+        .error {
+            margin-top: 10px;
+            color: var(--danger);
+            font-size: 0.9rem;
+        }
+
+        .table-card {
+            border: 1px solid var(--line);
+            background: var(--panel);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .table-scroll {
+            overflow: auto;
+            max-height: 78vh;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 760px;
+        }
+
+        thead th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            background: #152435;
+            color: #d6e8f9;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            text-align: left;
+            padding: 10px;
+            border-bottom: 1px solid var(--line);
+            white-space: nowrap;
+        }
+
+        tbody td {
+            padding: 9px 10px;
+            border-bottom: 1px solid #1e3042;
+            color: #cfe0f1;
+            font-size: 0.86rem;
+            white-space: nowrap;
+        }
+
+        tbody tr:nth-child(2n) {
+            background: #102030;
+        }
+
+        .back {
+            display: inline-flex;
+            margin-top: 12px;
+            color: var(--green);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.88rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .stat-card {
+            border: 1px solid var(--line);
+            background: var(--panel);
+            border-radius: 10px;
+            padding: 12px;
+        }
+
+        .stat-title {
+            font-size: 0.78rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 8px;
+        }
+
+        .stat-line {
+            font-size: 0.9rem;
+            color: var(--text);
+            margin-top: 3px;
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .result-card {
+            border: 1px solid var(--line);
+            background: var(--panel);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .result-head {
+            background: #152435;
+            border-bottom: 1px solid var(--line);
+            padding: 10px;
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #d6e8f9;
+        }
+
+        .result-scroll {
+            max-height: 280px;
+            overflow: auto;
+        }
+
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 380px;
+        }
+
+        .result-table th,
+        .result-table td {
+            padding: 8px 9px;
+            border-bottom: 1px solid #1e3042;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            text-align: left;
+        }
+
+        .pill {
+            display: inline-flex;
+            min-width: 20px;
+            justify-content: center;
+            border-radius: 999px;
+            padding: 2px 6px;
+            font-weight: 700;
+            font-size: 0.75rem;
+        }
+
+        .pill.w { background: rgba(0, 207, 123, 0.18); color: #7df3bc; }
+        .pill.d { background: rgba(255, 193, 90, 0.2); color: #ffd992; }
+        .pill.l { background: rgba(255, 100, 122, 0.2); color: #ff9ead; }
+
+        @media (max-width: 1100px) {
+            .stats-grid,
+            .result-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <div class="head">
+            <h1>CSV Viewer</h1>
+            <div class="meta">File: {{ csv_path }}</div>
+            <div class="meta">Showing {{ shown_rows }} rows (max {{ max_rows }} on this page)</div>
+            <div class="meta">Selected Team: {{ team_name }}</div>
+            {% if error %}
+                <div class="error">{{ error }}</div>
+            {% endif %}
+            <a class="back" href="/">Back to Home</a>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-title">Overall Results</div>
+                <div class="stat-line">Played: {{ team_summary.overall.played }}</div>
+                <div class="stat-line">Wins: {{ team_summary.overall.wins }} | Draws: {{ team_summary.overall.draws }} | Losses: {{ team_summary.overall.losses }}</div>
+                <div class="stat-line">GF: {{ team_summary.overall.gf }} | GA: {{ team_summary.overall.ga }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Home Results</div>
+                <div class="stat-line">Played: {{ team_summary.home.played }}</div>
+                <div class="stat-line">Wins: {{ team_summary.home.wins }} | Draws: {{ team_summary.home.draws }} | Losses: {{ team_summary.home.losses }}</div>
+                <div class="stat-line">GF: {{ team_summary.home.gf }} | GA: {{ team_summary.home.ga }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Away Results</div>
+                <div class="stat-line">Played: {{ team_summary.away.played }}</div>
+                <div class="stat-line">Wins: {{ team_summary.away.wins }} | Draws: {{ team_summary.away.draws }} | Losses: {{ team_summary.away.losses }}</div>
+                <div class="stat-line">GF: {{ team_summary.away.gf }} | GA: {{ team_summary.away.ga }}</div>
+            </div>
+        </div>
+
+        <div class="result-grid">
+            <div class="result-card">
+                <div class="result-head">Home Matches</div>
+                <div class="result-scroll">
+                    <table class="result-table">
+                        <thead>
+                            <tr><th>Date</th><th>Fixture</th><th>Score</th><th>Res</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for match in home_results %}
+                                <tr>
+                                    <td>{{ match.date }}</td>
+                                    <td>{{ match.home }} vs {{ match.away }}</td>
+                                    <td>{{ match.score }}</td>
+                                    <td><span class="pill {{ match.result|lower }}">{{ match.result }}</span></td>
+                                </tr>
+                            {% empty %}
+                                <tr><td colspan="4">No home matches found for {{ team_name }}.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="result-card">
+                <div class="result-head">Away Matches</div>
+                <div class="result-scroll">
+                    <table class="result-table">
+                        <thead>
+                            <tr><th>Date</th><th>Fixture</th><th>Score</th><th>Res</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for match in away_results %}
+                                <tr>
+                                    <td>{{ match.date }}</td>
+                                    <td>{{ match.home }} vs {{ match.away }}</td>
+                                    <td>{{ match.score }}</td>
+                                    <td><span class="pill {{ match.result|lower }}">{{ match.result }}</span></td>
+                                </tr>
+                            {% empty %}
+                                <tr><td colspan="4">No away matches found for {{ team_name }}.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="result-card">
+                <div class="result-head">Overall Matches</div>
+                <div class="result-scroll">
+                    <table class="result-table">
+                        <thead>
+                            <tr><th>Date</th><th>Fixture</th><th>Score</th><th>Res</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for match in overall_results %}
+                                <tr>
+                                    <td>{{ match.date }}</td>
+                                    <td>{{ match.home }} vs {{ match.away }}</td>
+                                    <td>{{ match.score }}</td>
+                                    <td><span class="pill {{ match.result|lower }}">{{ match.result }}</span></td>
+                                </tr>
+                            {% empty %}
+                                <tr><td colspan="4">No matches found for {{ team_name }}.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        {% if headers and rows %}
+            <div class="table-card">
+                <div class="table-scroll">
+                    <table>
+                        <thead>
+                            <tr>
+                                {% for header in headers %}
+                                    <th>{{ header }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in rows %}
+                                <tr>
+                                    {% for cell in row %}
+                                        <td>{{ cell }}</td>
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>
