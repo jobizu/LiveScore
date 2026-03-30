@@ -47,6 +47,7 @@
             height: calc(100vh - 96px);
             display: flex;
             flex-direction: column;
+            z-index: 1;
         }
 
         .detail-body {
@@ -63,6 +64,8 @@
             border: 0;
             display: block;
             background: #0f1e2e;
+            position: relative;
+            z-index: 0;
         }
 
         .detail-placeholder {
@@ -153,6 +156,7 @@
             align-items: center;
             gap: 8px;
             margin-top: 0;
+            z-index: 7000;
         }
 
         .day-nav-btn {
@@ -206,10 +210,10 @@
 
         .cal-popup {
             display: none;
-            position: absolute;
-            top: calc(100% + 8px);
+            position: fixed;
+            top: 0;
             left: 0;
-            z-index: 200;
+            z-index: 5000;
             background: #0e1d2e;
             border: 1px solid #243d57;
             border-radius: 12px;
@@ -440,6 +444,7 @@
             max-height: calc(100vh - 96px);
             scrollbar-width: thin;
             scrollbar-color: #2a4056 transparent;
+            z-index: 6000;
         }
 
         .sidebar::-webkit-scrollbar { width: 4px; }
@@ -648,6 +653,61 @@
 
         .fixture-row.active { background: #13253a; }
 
+        .fixture-star {
+            width: 14px;
+            height: 14px;
+            flex-shrink: 0;
+            border-radius: 50%;
+            border: 1px solid #2a4158;
+            color: #879ab0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.52rem;
+            line-height: 1;
+            cursor: pointer;
+            opacity: 0;
+            visibility: hidden;
+            transition: border-color 0.15s, color 0.15s, background 0.15s, opacity 0.15s;
+        }
+
+        .fixture-row:hover .fixture-star,
+        .fixture-row:focus-within .fixture-star,
+        .fixture-star.is-starred {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .fixture-star:hover {
+            border-color: #a6b1bf;
+            color: #c2cad6;
+        }
+
+        .fixture-star.is-starred {
+            border-color: #8b98aa;
+            color: #d0d7e2;
+            background: rgba(165, 177, 191, 0.16);
+        }
+
+        #followingBody .fixture-star,
+        #followingBody .fixture-star.is-starred {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        #followingBody .fixture-row:hover .fixture-star,
+        #followingBody .fixture-row:focus-within .fixture-star {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .following-empty {
+            padding: 10px;
+            color: var(--muted);
+            font-size: 0.78rem;
+            border-bottom: 1px solid #152333;
+        }
+
         .fix-home,
         .fix-away {
             flex: 1;
@@ -661,6 +721,24 @@
 
         .fix-home { text-align: right; }
         .fix-away { text-align: left; }
+
+        .ft-chip {
+            display: inline-block;
+            padding: 1px 4px;
+            border-radius: 4px;
+            border: 1px solid #3e556f;
+            color: #a9bbcd;
+            font-size: 0.63rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            vertical-align: middle;
+        }
+
+        .ft-slot {
+            width: 28px;
+            flex-shrink: 0;
+            text-align: left;
+        }
 
         .fix-mid {
             font-size: 0.72rem;
@@ -924,6 +1002,22 @@
             </h2>
             <ul class="league-list">
                 {% if match_groups %}
+                    <li id="followingCard" style="display:none;">
+                        <button class="accordion-toggle" type="button" id="followingToggle">
+                            <div class="league-logo-placeholder"></div>
+                            <div class="league-info">
+                                <div class="league-name">Following</div>
+                                <div class="league-country">Starred matches</div>
+                            </div>
+                            <span class="league-count" id="followingCount">0</span>
+                            <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"/>
+                            </svg>
+                        </button>
+                        <div class="accordion-body" id="followingBody">
+                            <div class="following-empty" id="followingEmpty">No followed matches yet.</div>
+                        </div>
+                    </li>
                     {% for group in match_groups %}
                         <li>
                             <button class="accordion-toggle" type="button">
@@ -944,11 +1038,13 @@
                                         data-home="{{ match.home }}"
                                         data-away="{{ match.away }}"
                                         data-date="{{ selected_date }}">
+                                        <span class="ft-slot">{% if match.status == 'FT' %}<span class="ft-chip">FT</span>{% endif %}</span>
                                         <span class="fix-home">{{ match.home }}</span>
                                         <span class="fix-mid{% if match.status == 'FT' %} is-score{% endif %}">
                                             {% if match.status == 'FT' %}{{ match.home_score }}-{{ match.away_score }}{% else %}{{ match.kickoff|slice:"11:" }}{% endif %}
                                         </span>
                                         <span class="fix-away">{{ match.away }}</span>
+                                        <span class="fixture-star" role="button" tabindex="0" aria-label="Follow match" title="Follow match">★</span>
                                     </button>
                                 {% endfor %}
                             </div>
@@ -993,6 +1089,11 @@
     const nextDayBtn = document.getElementById('nextDayBtn');
     const detailFrame = document.getElementById('detailFrame');
     const detailPlaceholder = document.getElementById('detailPlaceholder');
+    const followingCard = document.getElementById('followingCard');
+    const followingBody = document.getElementById('followingBody');
+    const followingCount = document.getElementById('followingCount');
+    const followingEmpty = document.getElementById('followingEmpty');
+    const FOLLOWING_KEY = 'livescore:following:matches';
 
     const selectedDateValue = btn.dataset.selectedDate;
     const todayDate  = new Date();
@@ -1093,7 +1194,51 @@
         }
     }
 
+    function positionPopup() {
+        const GAP = 8;
+        const MARGIN = 8;
+        const btnRect = btn.getBoundingClientRect();
+
+        // Temporarily show off-screen to measure size when closed.
+        const wasOpen = popup.classList.contains('open');
+        if (!wasOpen) {
+            popup.style.visibility = 'hidden';
+            popup.style.display = 'block';
+        }
+
+        const popupWidth = popup.offsetWidth;
+        const popupHeight = popup.offsetHeight;
+
+        let left = btnRect.left;
+        let top = btnRect.bottom + GAP;
+
+        if (left + popupWidth > window.innerWidth - MARGIN) {
+            left = window.innerWidth - popupWidth - MARGIN;
+        }
+        if (left < MARGIN) {
+            left = MARGIN;
+        }
+
+        if (top + popupHeight > window.innerHeight - MARGIN) {
+            const aboveTop = btnRect.top - popupHeight - GAP;
+            if (aboveTop >= MARGIN) {
+                top = aboveTop;
+            } else {
+                top = Math.max(MARGIN, window.innerHeight - popupHeight - MARGIN);
+            }
+        }
+
+        popup.style.left = left + 'px';
+        popup.style.top = top + 'px';
+
+        if (!wasOpen) {
+            popup.style.display = '';
+            popup.style.visibility = '';
+        }
+    }
+
     function openPopup() {
+        positionPopup();
         popup.classList.add('open');
         btn.setAttribute('aria-expanded', 'true');
     }
@@ -1107,6 +1252,14 @@
         e.stopPropagation();
         popup.classList.contains('open') ? closePopup() : openPopup();
     });
+
+    window.addEventListener('resize', function () {
+        if (popup.classList.contains('open')) positionPopup();
+    });
+
+    document.addEventListener('scroll', function () {
+        if (popup.classList.contains('open')) positionPopup();
+    }, true);
 
     prevBtn.addEventListener('click', function () {
         cursor.setMonth(cursor.getMonth() - 1);
@@ -1128,7 +1281,7 @@
 
     // Close when clicking outside
     document.addEventListener('click', function (e) {
-        if (!popup.contains(e.target) && e.target !== btn) closePopup();
+        if (!popup.contains(e.target) && !btn.contains(e.target)) closePopup();
     });
 
     // Close on Escape
@@ -1183,41 +1336,170 @@
             const body = toggle.nextElementSibling;
             const isOpen = body.classList.contains('open');
 
-            // Collapse all
-            document.querySelectorAll('.accordion-body.open').forEach(function (b) {
-                b.classList.remove('open');
-                b.previousElementSibling.classList.remove('open');
-            });
-
-            // Expand clicked (if it was closed)
-            if (!isOpen) {
-                body.classList.add('open');
-                toggle.classList.add('open');
-            }
+                body.classList.toggle('open', !isOpen);
+                toggle.classList.toggle('open', !isOpen);
             updateToggleAllLabel();
         });
     });
 
     updateToggleAllLabel();
 
-    // ── Fixture click → load detail frame ──────────────────
-    document.querySelectorAll('.fixture-row').forEach(function (row) {
-        row.addEventListener('click', function () {
-            const params = new URLSearchParams({
-                league: row.dataset.league,
-                home:   row.dataset.home,
-                away:   row.dataset.away,
-                date:   row.dataset.date,
-            });
-            detailPlaceholder.classList.add('hidden');
-            detailFrame.src = '/match/?' + params.toString();
+    function fixtureKey(row) {
+        return [row.dataset.date, row.dataset.league, row.dataset.home, row.dataset.away].join('|');
+    }
 
-            document.querySelectorAll('.fixture-row.active').forEach(function (r) {
-                r.classList.remove('active');
-            });
-            row.classList.add('active');
+    function loadFollowingKeys() {
+        try {
+            const raw = localStorage.getItem(FOLLOWING_KEY);
+            if (!raw) return [];
+            const parsed = JSON.parse(raw);
+            return Array.isArray(parsed) ? parsed : [];
+        } catch (e) {
+            return [];
+        }
+    }
+
+    function saveFollowingKeys(keys) {
+        localStorage.setItem(FOLLOWING_KEY, JSON.stringify(keys));
+    }
+
+    function updateFollowingCount() {
+        if (!followingBody || !followingCount || !followingEmpty || !followingCard) return;
+        const count = followingBody.querySelectorAll('.fixture-row').length;
+        followingCount.textContent = String(count);
+        followingEmpty.style.display = count ? 'none' : 'block';
+        followingCard.style.display = count ? '' : 'none';
+        if (!count) {
+            followingBody.classList.remove('open');
+            const toggle = followingBody.previousElementSibling;
+            if (toggle) toggle.classList.remove('open');
+        }
+    }
+
+    function markStarState(row, starred) {
+        const star = row.querySelector('.fixture-star');
+        if (!star) return;
+        star.classList.toggle('is-starred', starred);
+        star.setAttribute('aria-label', starred ? 'Unfollow match' : 'Follow match');
+        star.setAttribute('title', starred ? 'Unfollow match' : 'Follow match');
+    }
+
+    function syncStarsForKey(key, starred) {
+        document.querySelectorAll('.fixture-row').forEach(function (row) {
+            if (fixtureKey(row) === key) {
+                markStarState(row, starred);
+            }
         });
+    }
+
+    function removeFollowingClone(key) {
+        if (!followingBody) return;
+        followingBody.querySelectorAll('.fixture-row').forEach(function (row) {
+            if (fixtureKey(row) === key) {
+                row.remove();
+            }
+        });
+    }
+
+    function createFollowingClone(sourceRow) {
+        const clone = sourceRow.cloneNode(true);
+        delete clone.dataset.bound;
+        attachFixtureHandlers(clone);
+        return clone;
+    }
+
+    function toggleFollow(row) {
+        const key = fixtureKey(row);
+        const keys = loadFollowingKeys();
+        const index = keys.indexOf(key);
+        const isStarred = index !== -1;
+
+        if (isStarred) {
+            keys.splice(index, 1);
+            saveFollowingKeys(keys);
+            syncStarsForKey(key, false);
+            removeFollowingClone(key);
+        } else {
+            keys.push(key);
+            saveFollowingKeys(keys);
+            syncStarsForKey(key, true);
+            removeFollowingClone(key);
+            if (followingBody) {
+                followingBody.appendChild(createFollowingClone(row));
+            }
+        }
+
+        updateFollowingCount();
+    }
+
+    function loadMatchDetail(row) {
+        const params = new URLSearchParams({
+            league: row.dataset.league,
+            home:   row.dataset.home,
+            away:   row.dataset.away,
+            date:   row.dataset.date,
+        });
+        detailPlaceholder.classList.add('hidden');
+        detailFrame.src = '/match/?' + params.toString();
+
+        document.querySelectorAll('.fixture-row.active').forEach(function (r) {
+            r.classList.remove('active');
+        });
+
+        const key = fixtureKey(row);
+        document.querySelectorAll('.fixture-row').forEach(function (r) {
+            if (fixtureKey(r) === key) {
+                r.classList.add('active');
+            }
+        });
+    }
+
+    function attachFixtureHandlers(row) {
+        if (row.dataset.bound === '1') return;
+        row.dataset.bound = '1';
+
+        row.addEventListener('click', function () {
+            loadMatchDetail(row);
+        });
+
+        const star = row.querySelector('.fixture-star');
+        if (star) {
+            star.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleFollow(row);
+            });
+
+            star.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleFollow(row);
+                }
+            });
+        }
+    }
+
+    // Initialize fixture handlers and restore followed matches from storage.
+    const allRows = Array.from(document.querySelectorAll('.fixture-row')).filter(function (row) {
+        return row.closest('#followingBody') === null;
     });
+
+    allRows.forEach(function (row) {
+        attachFixtureHandlers(row);
+    });
+
+    const followed = loadFollowingKeys();
+    followed.forEach(function (key) {
+        const source = allRows.find(function (row) { return fixtureKey(row) === key; });
+        if (!source) return;
+        markStarState(source, true);
+        if (followingBody) {
+            followingBody.appendChild(createFollowingClone(source));
+        }
+    });
+
+    updateFollowingCount();
 }());
 </script>
 </body>
