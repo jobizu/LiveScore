@@ -89,6 +89,75 @@
             margin-top: 12px;
         }
 
+        .tab-form-wrap {
+            position: relative;
+            display: inline-flex;
+        }
+
+        .tab-form-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tab-caret {
+            font-size: 0.72rem;
+            color: var(--muted);
+            transform-origin: 50% 45%;
+            transition: transform 0.15s, color 0.15s;
+        }
+
+        .tab-form-btn.is-open .tab-caret {
+            transform: rotate(180deg);
+            color: var(--text);
+        }
+
+        .form-menu {
+            display: none;
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            z-index: 20;
+            min-width: 130px;
+            background: #0f1e2e;
+            border: 1px solid #2d465f;
+            border-radius: 8px;
+            padding: 6px;
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+        }
+
+        .form-menu.open {
+            display: grid;
+            gap: 4px;
+        }
+
+        .form-menu-item {
+            border: 1px solid transparent;
+            border-radius: 6px;
+            background: transparent;
+            color: var(--muted);
+            text-align: left;
+            font: inherit;
+            font-size: 0.76rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            padding: 6px 8px;
+            cursor: pointer;
+        }
+
+        .form-menu-item:hover {
+            color: var(--text);
+            border-color: #2d465f;
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .form-menu-item.is-active {
+            color: var(--green);
+            border-color: #1f5e45;
+            background: rgba(0, 207, 123, 0.08);
+        }
+
         .tab-btn {
             border: none;
             background: transparent;
@@ -177,6 +246,8 @@
         .w { background: rgba(0, 207, 123, 0.16); color: #8ff6c6; }
         .d { background: rgba(255, 193, 90, 0.2); color: #ffd992; }
         .l { background: rgba(255, 100, 122, 0.2); color: #ff9ead; }
+        .y { background: rgba(0, 207, 123, 0.16); color: #8ff6c6; }
+        .n { background: rgba(255, 100, 122, 0.2); color: #ff9ead; }
 
         .empty {
             padding: 16px 12px;
@@ -282,7 +353,17 @@
         </div>
         <div class="meta">{{ selected_date }}</div>
         <div class="tabs" role="tablist" aria-label="Match detail tabs">
-            <button class="tab-btn is-active" type="button" role="tab" aria-selected="true" data-tab="form">Form</button>
+            <div class="tab-form-wrap">
+                <button class="tab-btn tab-form-btn is-active" id="formTabBtn" type="button" role="tab" aria-selected="true" aria-expanded="false" data-tab="form">
+                    <span id="formTabLabel">Form</span>
+                    <span class="tab-caret" aria-hidden="true">▼</span>
+                </button>
+                <div class="form-menu" id="formMenu" role="menu" aria-label="Form mode">
+                    <button class="form-menu-item is-active" type="button" role="menuitem" data-mode="form">Form</button>
+                    <button class="form-menu-item" type="button" role="menuitem" data-mode="btts">BTTS</button>
+                    <button class="form-menu-item" type="button" role="menuitem" data-mode="over25">Over 2.5</button>
+                </div>
+            </div>
             <button class="tab-btn" type="button" role="tab" aria-selected="false" data-tab="h2h">H2H</button>
             <button class="tab-btn" type="button" role="tab" aria-selected="false" data-tab="table">Table</button>
         </div>
@@ -298,7 +379,7 @@
                             <div class="row">
                                 <span class="date">{{ item.date }}</span>
                                 <span class="opponent">vs {{ item.opponent }}</span>
-                                <span class="result {{ item.result|lower }}">{{ item.result }}</span>
+                                <span class="result metric-badge {{ item.result|lower }}" data-form="{{ item.result }}" data-btts="{{ item.btts|yesno:'Yes,No' }}" data-over25="{{ item.over_25|yesno:'Yes,No' }}">{{ item.result }}</span>
                             </div>
                         {% empty %}
                             <div class="empty">No recent home-team matches found.</div>
@@ -313,7 +394,7 @@
                             <div class="row">
                                 <span class="date">{{ item.date }}</span>
                                 <span class="opponent">vs {{ item.opponent }}</span>
-                                <span class="result {{ item.result|lower }}">{{ item.result }}</span>
+                                <span class="result metric-badge {{ item.result|lower }}" data-form="{{ item.result }}" data-btts="{{ item.btts|yesno:'Yes,No' }}" data-over25="{{ item.over_25|yesno:'Yes,No' }}">{{ item.result }}</span>
                             </div>
                         {% empty %}
                             <div class="empty">No recent away-team matches found.</div>
@@ -389,6 +470,81 @@
     (function () {
         const tabs = Array.from(document.querySelectorAll('.tab-btn'));
         const panels = Array.from(document.querySelectorAll('.tab-panel'));
+        const formTabBtn = document.getElementById('formTabBtn');
+        const formTabLabel = document.getElementById('formTabLabel');
+        const formMenu = document.getElementById('formMenu');
+        const formMenuItems = Array.from(document.querySelectorAll('.form-menu-item'));
+        const metricBadges = Array.from(document.querySelectorAll('.metric-badge'));
+        let currentMode = 'form';
+
+        function closeFormMenu() {
+            if (!formMenu || !formTabBtn) return;
+            formMenu.classList.remove('open');
+            formTabBtn.classList.remove('is-open');
+            formTabBtn.setAttribute('aria-expanded', 'false');
+        }
+
+        function openFormMenu() {
+            if (!formMenu || !formTabBtn) return;
+            formMenu.classList.add('open');
+            formTabBtn.classList.add('is-open');
+            formTabBtn.setAttribute('aria-expanded', 'true');
+        }
+
+        function toggleFormMenu() {
+            if (!formMenu) return;
+            if (formMenu.classList.contains('open')) {
+                closeFormMenu();
+            } else {
+                openFormMenu();
+            }
+        }
+
+        function labelForMode(mode) {
+            if (mode === 'btts') return 'BTTS';
+            if (mode === 'over25') return 'Over 2.5';
+            return 'Form';
+        }
+
+        function applyFormMetric(mode) {
+            currentMode = mode;
+            metricBadges.forEach(function (badge) {
+                let textValue = badge.dataset.form || '';
+                let toneClass = (badge.dataset.form || '').toLowerCase();
+
+                if (mode === 'btts') {
+                    textValue = badge.dataset.btts || 'No';
+                    toneClass = textValue === 'Yes' ? 'y' : 'n';
+                } else if (mode === 'over25') {
+                    textValue = badge.dataset.over25 || 'No';
+                    toneClass = textValue === 'Yes' ? 'y' : 'n';
+                }
+
+                badge.textContent = textValue;
+                badge.classList.remove('w', 'd', 'l', 'y', 'n');
+                if (toneClass) {
+                    badge.classList.add(toneClass);
+                }
+            });
+
+            if (formTabLabel) {
+                formTabLabel.textContent = labelForMode(mode);
+            }
+
+            formMenuItems.forEach(function (item) {
+                item.classList.toggle('is-active', item.dataset.mode === mode);
+            });
+        }
+
+        applyFormMetric(currentMode);
+
+        formMenuItems.forEach(function (item) {
+            item.addEventListener('click', function (e) {
+                e.stopPropagation();
+                applyFormMetric(item.dataset.mode || 'form');
+                closeFormMenu();
+            });
+        });
 
         tabs.forEach(function (tab) {
             tab.addEventListener('click', function () {
@@ -403,7 +559,20 @@
                 panels.forEach(function (panel) {
                     panel.classList.toggle('is-active', panel.dataset.panel === target);
                 });
+
+                if (target === 'form') {
+                    toggleFormMenu();
+                } else {
+                    closeFormMenu();
+                }
             });
+        });
+
+        document.addEventListener('click', function (e) {
+            if (!formMenu || !formTabBtn) return;
+            if (!formMenu.contains(e.target) && !formTabBtn.contains(e.target)) {
+                closeFormMenu();
+            }
         });
     }());
     </script>
