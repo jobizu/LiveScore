@@ -30,7 +30,7 @@
             border: 1px solid var(--line);
             border-radius: 12px;
             background: var(--panel);
-            padding: 14px;
+            padding: 14px 14px 0;
             margin-bottom: 12px;
         }
 
@@ -46,19 +46,24 @@
             display: grid;
             grid-template-columns: 1fr auto 1fr;
             align-items: center;
-            gap: 8px;
+            gap: 24px;
             font-weight: 700;
-            font-size: 1rem;
+            font-size: 1.3rem;
         }
 
-        .home { text-align: right; }
-        .away { text-align: left; }
+        .home,
+        .away {
+            text-align: center;
+            justify-self: stretch;
+            line-height: 1.2;
+        }
 
         .score {
             border: 1px solid #355171;
             border-radius: 999px;
             padding: 4px 10px;
             font-weight: 800;
+            font-size: 0.95rem;
         }
 
         .meta {
@@ -68,17 +73,68 @@
             text-align: center;
         }
 
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-
         .card {
             border: 1px solid var(--line);
             border-radius: 10px;
             background: var(--panel);
             overflow: hidden;
+        }
+
+        .tabs {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            padding: 0 10px;
+            border-top: 1px solid var(--line);
+            margin-top: 12px;
+        }
+
+        .tab-btn {
+            border: none;
+            background: transparent;
+            color: var(--muted);
+            padding: 12px 10px 10px;
+            font: inherit;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .tab-btn::after {
+            content: "";
+            position: absolute;
+            left: 10px;
+            right: 10px;
+            top: -1px;
+            height: 2px;
+            border-radius: 999px;
+            background: transparent;
+        }
+
+        .tab-btn.is-active {
+            color: var(--text);
+        }
+
+        .tab-btn.is-active::after {
+            background: var(--green);
+        }
+
+        .tab-panel {
+            display: none;
+            padding: 10px;
+        }
+
+        .tab-panel.is-active {
+            display: block;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
         }
 
         .card h3 {
@@ -128,8 +184,91 @@
             font-size: 0.8rem;
         }
 
+        .h2h-row {
+            display: grid;
+            grid-template-columns: 78px 1fr auto;
+            gap: 10px;
+            align-items: center;
+            padding: 10px 12px;
+            border-bottom: 1px solid #1e3042;
+            font-size: 0.8rem;
+        }
+
+        .h2h-row:last-child {
+            border-bottom: none;
+        }
+
+        .h2h-match {
+            display: grid;
+            gap: 2px;
+            min-width: 0;
+        }
+
+        .h2h-teams {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .h2h-competition {
+            color: var(--muted);
+            font-size: 0.74rem;
+        }
+
+        .score-pill {
+            border-radius: 999px;
+            border: 1px solid #355171;
+            padding: 2px 8px;
+            font-weight: 700;
+            font-size: 0.74rem;
+        }
+
+        .table-wrap {
+            overflow: auto;
+        }
+
+        .league-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+
+        .league-table th,
+        .league-table td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #1e3042;
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .league-table th:first-child,
+        .league-table td:first-child,
+        .league-table th:nth-child(2),
+        .league-table td:nth-child(2) {
+            text-align: left;
+        }
+
+        .league-table thead th {
+            color: var(--muted);
+            font-size: 0.74rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .league-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .league-table .is-focus {
+            background: rgba(0, 207, 123, 0.08);
+        }
+
         @media (max-width: 760px) {
-            .grid { grid-template-columns: 1fr; }
+            .form-grid { grid-template-columns: 1fr; }
+            .tabs {
+                overflow: auto;
+            }
         }
     </style>
 </head>
@@ -138,42 +277,135 @@
         <div class="league">{{ league }}</div>
         <div class="teams">
             <div class="home">{{ home_team }}</div>
-            <div class="score">{{ match_score }} · {{ match_status }}</div>
+            <div class="score">{% if match_status == 'FT' %}{{ match_score }} · {{ match_status }}{% else %}{{ kickoff_time }}{% endif %}</div>
             <div class="away">{{ away_team }}</div>
         </div>
         <div class="meta">{{ selected_date }}</div>
+        <div class="tabs" role="tablist" aria-label="Match detail tabs">
+            <button class="tab-btn is-active" type="button" role="tab" aria-selected="true" data-tab="form">Form</button>
+            <button class="tab-btn" type="button" role="tab" aria-selected="false" data-tab="h2h">H2H</button>
+            <button class="tab-btn" type="button" role="tab" aria-selected="false" data-tab="table">Table</button>
+        </div>
     </section>
 
-    <section class="grid">
-        <article class="card">
-            <h3>{{ home_team }} Recent Form</h3>
-            <div class="list">
-                {% for item in home_form %}
-                    <div class="row">
-                        <span class="date">{{ item.date }}</span>
-                        <span class="opponent">vs {{ item.opponent }}</span>
-                        <span class="result {{ item.result|lower }}">{{ item.result }}</span>
+    <section class="card">
+        <div class="tab-panel is-active" data-panel="form">
+            <div class="form-grid">
+                <article class="card">
+                    <h3>{{ home_team }} Recent Form</h3>
+                    <div class="list">
+                        {% for item in home_form %}
+                            <div class="row">
+                                <span class="date">{{ item.date }}</span>
+                                <span class="opponent">vs {{ item.opponent }}</span>
+                                <span class="result {{ item.result|lower }}">{{ item.result }}</span>
+                            </div>
+                        {% empty %}
+                            <div class="empty">No recent home-team matches found.</div>
+                        {% endfor %}
                     </div>
-                {% empty %}
-                    <div class="empty">No recent home-team matches found.</div>
-                {% endfor %}
-            </div>
-        </article>
+                </article>
 
-        <article class="card">
-            <h3>{{ away_team }} Recent Form</h3>
-            <div class="list">
-                {% for item in away_form %}
-                    <div class="row">
-                        <span class="date">{{ item.date }}</span>
-                        <span class="opponent">vs {{ item.opponent }}</span>
-                        <span class="result {{ item.result|lower }}">{{ item.result }}</span>
+                <article class="card">
+                    <h3>{{ away_team }} Recent Form</h3>
+                    <div class="list">
+                        {% for item in away_form %}
+                            <div class="row">
+                                <span class="date">{{ item.date }}</span>
+                                <span class="opponent">vs {{ item.opponent }}</span>
+                                <span class="result {{ item.result|lower }}">{{ item.result }}</span>
+                            </div>
+                        {% empty %}
+                            <div class="empty">No recent away-team matches found.</div>
+                        {% endfor %}
                     </div>
-                {% empty %}
-                    <div class="empty">No recent away-team matches found.</div>
-                {% endfor %}
+                </article>
             </div>
-        </article>
+        </div>
+
+        <div class="tab-panel" data-panel="h2h">
+            <div class="card">
+                <h3>{{ home_team }} vs {{ away_team }}</h3>
+                <div class="list">
+                    {% for item in h2h_rows %}
+                        <div class="h2h-row">
+                            <span class="date">{{ item.date }}</span>
+                            <div class="h2h-match">
+                                <span class="h2h-teams">{{ item.home }} vs {{ item.away }}</span>
+                                <span class="h2h-competition">{{ item.competition }}</span>
+                            </div>
+                            <span class="score-pill">{{ item.score }}</span>
+                        </div>
+                    {% empty %}
+                        <div class="empty">No head-to-head matches found.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-panel" data-panel="table">
+            <div class="table-wrap">
+                {% if table_rows %}
+                    <table class="league-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Team</th>
+                                <th>P</th>
+                                <th>W</th>
+                                <th>D</th>
+                                <th>L</th>
+                                <th>GF</th>
+                                <th>GA</th>
+                                <th>GD</th>
+                                <th>Pts</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in table_rows %}
+                                <tr{% if item.team == home_team or item.team == away_team %} class="is-focus"{% endif %}>
+                                    <td>{{ item.rank }}</td>
+                                    <td>{{ item.team }}</td>
+                                    <td>{{ item.played }}</td>
+                                    <td>{{ item.wins }}</td>
+                                    <td>{{ item.draws }}</td>
+                                    <td>{{ item.losses }}</td>
+                                    <td>{{ item.gf }}</td>
+                                    <td>{{ item.ga }}</td>
+                                    <td>{{ item.gd }}</td>
+                                    <td>{{ item.pts }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <div class="empty">No league table data available.</div>
+                {% endif %}
+            </div>
+        </div>
     </section>
+
+    <script>
+    (function () {
+        const tabs = Array.from(document.querySelectorAll('.tab-btn'));
+        const panels = Array.from(document.querySelectorAll('.tab-panel'));
+
+        tabs.forEach(function (tab) {
+            tab.addEventListener('click', function () {
+                const target = tab.dataset.tab;
+
+                tabs.forEach(function (item) {
+                    const isActive = item === tab;
+                    item.classList.toggle('is-active', isActive);
+                    item.setAttribute('aria-selected', isActive ? 'true' : 'false');
+                });
+
+                panels.forEach(function (panel) {
+                    panel.classList.toggle('is-active', panel.dataset.panel === target);
+                });
+            });
+        });
+    }());
+    </script>
 </body>
 </html>

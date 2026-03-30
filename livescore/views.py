@@ -471,6 +471,7 @@ def match_detail(request):
 
     match_score = "vs"
     match_status = "Scheduled"
+    kickoff_time = "TBD"
     for row in rows:
         row_date = _parse_csv_date(row.get("Date"))
         if row_date != selected_date:
@@ -483,6 +484,8 @@ def match_detail(request):
         is_same_league = not league or row_competition == league
         if not (is_same_match and is_same_league):
             continue
+
+        kickoff_time = (row.get("Time") or "").strip() or "TBD"
 
         if _match_played(row):
             home_goals = int((row.get("FTHG") or "0").strip() or "0")
@@ -525,7 +528,7 @@ def match_detail(request):
         "league": league or "League",
         "home_team": home_team or "Home",
         "away_team": away_team or "Away",
-        "selected_date": selected_date.strftime("%d %b %Y"),
+        "selected_date": selected_date.strftime("%d %b"),
         "home_form": home_form,
         "away_form": away_form,
         "home_form_home_only": home_form_home_only,
@@ -534,6 +537,7 @@ def match_detail(request):
         "table_rows": table_rows,
         "match_score": match_score,
         "match_status": match_status,
+        "kickoff_time": kickoff_time,
     }
     return render(request, "match_detail.html", context)
 
