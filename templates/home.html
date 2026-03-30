@@ -33,7 +33,7 @@
             margin: 0 auto;
             padding: 20px;
             display: grid;
-            grid-template-columns: 200px minmax(0, 700px) 1fr;
+            grid-template-columns: 320px minmax(0, 1fr);
             gap: 18px;
         }
 
@@ -42,12 +42,90 @@
             border-radius: 12px;
             background: var(--panel);
             overflow: hidden;
+            position: sticky;
+            top: 76px;
+            height: calc(100vh - 96px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .detail-body {
+            flex: 1;
+            min-height: 0;
+            position: relative;
+            background: #0f1e2e;
+            border-top: 1px solid #223447;
+        }
+
+        .detail-frame {
+            width: 100%;
+            height: 100%;
+            border: 0;
+            display: block;
+            background: #0f1e2e;
+        }
+
+        .detail-placeholder {
+            position: absolute;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            text-align: center;
+            color: var(--muted);
+            padding: 24px;
+        }
+
+        .detail-placeholder.hidden {
+            display: none;
+        }
+
+        .detail-body {
+            position: relative;
+            flex: 1;
+            min-height: 0;
+            background: #0f1e2e;
+        }
+
+        .detail-frame {
+            width: 100%;
+            height: 100%;
+            min-height: 100%;
+            border: none;
+            display: block;
+            background: #0f1e2e;
+        }
+
+        .detail-placeholder {
+            position: absolute;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            padding: 18px;
+            text-align: center;
+            color: var(--muted);
+            background: linear-gradient(180deg, #101d2d 0%, #0b1724 100%);
+        }
+
+        .detail-placeholder.hidden {
+            display: none;
+        }
+
+        .detail-placeholder-card {
+            max-width: 360px;
+            display: grid;
+            gap: 8px;
         }
 
         .feed-head {
             padding: 14px 14px 10px;
             border-bottom: 1px solid var(--line);
             background: linear-gradient(180deg, #142235 0%, #111b28 100%);
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
         }
 
         .main h1 {
@@ -74,7 +152,7 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            margin-top: 12px;
+            margin-top: 0;
         }
 
         .day-nav-btn {
@@ -225,13 +303,36 @@
             padding: 10px;
             display: grid;
             gap: 8px;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            scrollbar-width: thin;
+            scrollbar-color: #2a4056 transparent;
+            max-height: 220px;
+            border-bottom: 1px solid #223447;
         }
+
+        .match-list::-webkit-scrollbar { width: 4px; }
+        .match-list::-webkit-scrollbar-track { background: transparent; }
+        .match-list::-webkit-scrollbar-thumb { background: #2a4056; border-radius: 4px; }
+        .match-list::-webkit-scrollbar-thumb:hover { background: #3a5a78; }
 
         .match-card {
             border: 1px solid #2a4056;
             border-radius: 10px;
             background: #132132;
             padding: 10px;
+            cursor: pointer;
+            transition: border-color 0.15s, background 0.15s;
+        }
+
+        .match-card:hover {
+            border-color: #3a5a78;
+            background: #16273b;
+        }
+
+        .match-card.is-active {
+            border-color: var(--green);
+            box-shadow: inset 0 0 0 1px rgba(0, 207, 123, 0.35);
         }
 
         .match-top {
@@ -333,19 +434,61 @@
             border: 1px solid var(--line);
             border-radius: 12px;
             background: var(--panel);
-            overflow: hidden;
-            height: fit-content;
+            overflow-y: auto;
+            position: sticky;
+            top: 76px;
+            max-height: calc(100vh - 96px);
+            scrollbar-width: thin;
+            scrollbar-color: #2a4056 transparent;
         }
+
+        .sidebar::-webkit-scrollbar { width: 4px; }
+        .sidebar::-webkit-scrollbar-track { background: transparent; }
+        .sidebar::-webkit-scrollbar-thumb { background: #2a4056; border-radius: 4px; }
+        .sidebar::-webkit-scrollbar-thumb:hover { background: #3a5a78; }
 
         .sidebar h2 {
             margin: 0;
-            padding: 12px;
+            padding: 8px 12px;
             font-size: 0.84rem;
             letter-spacing: 0.08em;
             text-transform: uppercase;
             color: #a9c0d8;
             border-bottom: 1px solid var(--line);
             background: #152435;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .sidebar h2 .date-picker-wrap { margin-top: 0; }
+        .sidebar h2 .day-nav-btn { width: 26px; height: 26px; }
+        .sidebar h2 .date-btn { padding: 4px 8px; font-size: 0.76rem; gap: 5px; }
+
+        .toggle-all-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 26px;
+            height: 26px;
+            background: transparent;
+            border: 1px solid #2a4059;
+            border-radius: 50%;
+            color: var(--muted);
+            cursor: pointer;
+            transition: border-color 0.15s, color 0.15s, background 0.15s;
+            flex-shrink: 0;
+            padding: 0;
+        }
+
+        .toggle-all-btn:hover {
+            border-color: var(--green);
+            color: var(--green);
+            background: rgba(0,207,123,0.06);
         }
 
         .league-list {
@@ -368,11 +511,19 @@
             transition: background 0.15s;
             text-decoration: none;
             color: var(--text);
+            width: 100%;
+            text-align: left;
+            font: inherit;
         }
 
         .league-item:hover {
             background: #122131;
             border-color: #2a4158;
+        }
+
+        .league-item.active {
+            background: #13253a;
+            border-color: #3b5b79;
         }
 
         .league-logo {
@@ -419,6 +570,111 @@
             border-radius: 999px;
             padding: 1px 6px;
             flex-shrink: 0;
+        }
+
+        /* ── Accordion ──────────────────────────────── */
+        .accordion-toggle {
+            width: 100%;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            padding: 7px 8px;
+            background: transparent;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s;
+            color: var(--text);
+            font: inherit;
+            text-align: left;
+        }
+
+        .accordion-toggle:hover {
+            background: #122131;
+            border-color: #2a4158;
+        }
+
+        .accordion-toggle.open {
+            background: #13253a;
+            border-color: #3b5b79;
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+
+        .chevron {
+            flex-shrink: 0;
+            color: var(--muted);
+            transition: transform 0.2s;
+        }
+
+        .accordion-toggle.open .chevron {
+            transform: rotate(180deg);
+        }
+
+        .accordion-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.25s ease;
+            background: #0b1825;
+            border: 1px solid transparent;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+        }
+
+        .accordion-body.open {
+            max-height: 900px;
+            border-color: #3b5b79;
+        }
+
+        /* ── Fixture rows ───────────────────────────── */
+        .fixture-row {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 6px 8px;
+            gap: 5px;
+            border: none;
+            border-bottom: 1px solid #152333;
+            background: transparent;
+            cursor: pointer;
+            font: inherit;
+            color: var(--text);
+            transition: background 0.12s;
+        }
+
+        .fixture-row:last-child { border-bottom: none; }
+
+        .fixture-row:hover { background: #122131; }
+
+        .fixture-row.active { background: #13253a; }
+
+        .fix-home,
+        .fix-away {
+            flex: 1;
+            font-size: 0.76rem;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-width: 0;
+        }
+
+        .fix-home { text-align: right; }
+        .fix-away { text-align: left; }
+
+        .fix-mid {
+            font-size: 0.72rem;
+            color: var(--muted);
+            min-width: 36px;
+            text-align: center;
+            flex-shrink: 0;
+            white-space: nowrap;
+            letter-spacing: 0.03em;
+        }
+
+        .fix-mid.is-score {
+            color: var(--green);
+            font-weight: 700;
         }
 
         /* ── Header ─────────────────────────────────── */
@@ -567,7 +823,7 @@
         }
 
         @media (max-width: 1024px) {
-            .layout { grid-template-columns: 200px 1fr; }
+            .layout { grid-template-columns: 320px 1fr; }
         }
 
         @media (max-width: 900px) {
@@ -619,38 +875,16 @@
 
     <div class="layout">
         <aside class="sidebar">
-            <h2>Leagues on {{ selected_date_label }}</h2>
-            <ul class="league-list">
-                {% if leagues %}
-                    {% for league in leagues %}
-                        <li>
-                            <a class="league-item" href="#">
-                                {% if league.logo %}
-                                    <img class="league-logo" src="{{ league.logo }}" alt="{{ league.name }}" loading="lazy">
-                                {% else %}
-                                    <div class="league-logo-placeholder"></div>
-                                {% endif %}
-                                <div class="league-info">
-                                    <div class="league-name">{{ league.name }}</div>
-                                    {% if league.country %}<div class="league-country">{{ league.country }}</div>{% endif %}
-                                </div>
-                                <span class="league-count">{{ league.count }}</span>
-                            </a>
-                        </li>
-                    {% endfor %}
-                {% else %}
-                    <li style="padding:10px;color:var(--muted);font-size:0.82rem;">{% if api_access_error %}Unable to load leagues until API access is fixed.{% else %}No leagues on {{ selected_date_label|lower }}.{% endif %}</li>
-                {% endif %}
-            </ul>
-        </aside>
-
-        <section class="main">
-            <div class="feed-head">
-                <h1>Matches</h1>
-                <p>Fixtures and leagues for {{ selected_date_label }}, powered by API-Football.</p>
-                {% if api_error %}
-                    <p class="api-note">{{ api_error }}</p>
-                {% endif %}
+            <h2>Leagues
+                <button class="toggle-all-btn" id="toggleAllBtn" type="button" aria-label="Expand all">
+                    <!-- expand icon: arrows pointing away -->
+                    <svg id="toggleAllIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="7 17 3 17 3 21"/>
+                        <polyline points="21 7 21 3 17 3"/>
+                        <line x1="3" y1="21" x2="9" y2="15"/>
+                        <line x1="21" y1="3" x2="15" y2="9"/>
+                    </svg>
+                </button>
                 <div class="date-picker-wrap">
                     <button class="day-nav-btn" id="prevDayBtn" type="button" aria-label="Previous day">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
@@ -659,7 +893,7 @@
                     </button>
 
                     <button class="date-btn" id="dateBtn" aria-haspopup="true" aria-expanded="false" data-selected-date="{{ selected_date }}">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
                             <line x1="16" y1="2" x2="16" y2="6"/>
                             <line x1="8" y1="2" x2="8" y2="6"/>
@@ -687,43 +921,58 @@
                         <div class="cal-grid" id="calGrid"></div>
                     </div>
                 </div>
-            </div>
-
-            <div class="match-list">
-                {% if matches %}
-                    {% for match in matches %}
-                        <article class="match-card">
-                            <div class="match-top">
-                                <span class="league-label">{{ match.league }}</span>
-                                {% if match.status == 'LIVE' %}
-                                    <span class="state live">{{ match.status }} {{ match.minute }}</span>
-                                {% else %}
-                                    <span class="state">{{ match.status }}</span>
-                                {% endif %}
-                            </div>
-
-                            <div class="teams">
-                                <div class="team-row">
-                                    {% if match.home_logo %}<img src="{{ match.home_logo }}" alt="" width="18" height="18" style="object-fit:contain;flex-shrink:0;" loading="lazy">{% endif %}
-                                    <span>{{ match.home }}</span>
-                                    <span class="score">{{ match.home_score }}</span>
+            </h2>
+            <ul class="league-list">
+                {% if match_groups %}
+                    {% for group in match_groups %}
+                        <li>
+                            <button class="accordion-toggle" type="button">
+                                <div class="league-logo-placeholder"></div>
+                                <div class="league-info">
+                                    <div class="league-name">{{ group.league }}</div>
+                                    {% if group.country %}<div class="league-country">{{ group.country }}</div>{% endif %}
                                 </div>
-                                <div class="team-row">
-                                    {% if match.away_logo %}<img src="{{ match.away_logo }}" alt="" width="18" height="18" style="object-fit:contain;flex-shrink:0;" loading="lazy">{% endif %}
-                                    <span>{{ match.away }}</span>
-                                    <span class="score">{{ match.away_score }}</span>
-                                </div>
+                                <span class="league-count">{{ group.matches|length }}</span>
+                                <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="6 9 12 15 18 9"/>
+                                </svg>
+                            </button>
+                            <div class="accordion-body">
+                                {% for match in group.matches %}
+                                    <button class="fixture-row" type="button"
+                                        data-league="{{ group.league }}"
+                                        data-home="{{ match.home }}"
+                                        data-away="{{ match.away }}"
+                                        data-date="{{ selected_date }}">
+                                        <span class="fix-home">{{ match.home }}</span>
+                                        <span class="fix-mid{% if match.status == 'FT' %} is-score{% endif %}">
+                                            {% if match.status == 'FT' %}{{ match.home_score }}-{{ match.away_score }}{% else %}{{ match.kickoff|slice:"11:" }}{% endif %}
+                                        </span>
+                                        <span class="fix-away">{{ match.away }}</span>
+                                    </button>
+                                {% endfor %}
                             </div>
-
-                            <div class="meta">
-                                <span class="kickoff">{{ match.kickoff }}</span>
-                                <a class="cta" href="{{ match.link }}" target="_blank" rel="noreferrer">Match details</a>
-                            </div>
-                        </article>
+                        </li>
                     {% endfor %}
                 {% else %}
-                    <div class="empty-state">{% if api_access_error %}API-Football is rejecting the configured key, so fixtures and leagues cannot be loaded right now.{% else %}No fixtures scheduled for {{ selected_date_label|lower }}.{% endif %}</div>
+                    <li style="padding:10px;color:var(--muted);font-size:0.82rem;">{% if api_access_error %}Unable to load leagues.{% else %}No fixtures on {{ selected_date_label|lower }}.{% endif %}</li>
                 {% endif %}
+            </ul>
+        </aside>
+
+        <section class="main">
+            <div class="feed-head">
+                <h1>Match Detail</h1>
+            </div>
+
+            <div class="detail-body">
+                <div class="detail-placeholder" id="detailPlaceholder">
+                    <div>
+                        <strong>No match selected</strong>
+                        <div style="margin-top:8px;">Match details will appear here.</div>
+                    </div>
+                </div>
+                <iframe class="detail-frame" id="detailFrame" title="Match details" loading="lazy"></iframe>
             </div>
         </section>
     </div>
@@ -742,6 +991,8 @@
     const nextBtn    = document.getElementById('calNext');
     const prevDayBtn = document.getElementById('prevDayBtn');
     const nextDayBtn = document.getElementById('nextDayBtn');
+    const detailFrame = document.getElementById('detailFrame');
+    const detailPlaceholder = document.getElementById('detailPlaceholder');
 
     const selectedDateValue = btn.dataset.selectedDate;
     const todayDate  = new Date();
@@ -886,6 +1137,87 @@
     });
 
     renderCalendar();
+
+    // ── Accordion ──────────────────────────────────────────
+    const toggleAllBtn = document.getElementById('toggleAllBtn');
+    const toggleAllIcon = document.getElementById('toggleAllIcon');
+    let allExpanded = false;
+
+    // Expand icon: arrows pointing away from centre
+    const SVG_EXPAND = `<polyline points="7 17 3 17 3 21"/><polyline points="21 7 21 3 17 3"/><line x1="3" y1="21" x2="9" y2="15"/><line x1="21" y1="3" x2="15" y2="9"/>`;
+    // Collapse icon: arrows pointing toward centre
+    const SVG_COLLAPSE = `<polyline points="3 15 3 21 9 21"/><polyline points="21 9 21 3 15 3"/><line x1="21" y1="3" x2="15" y2="9"/><line x1="3" y1="21" x2="9" y2="15"/>`;
+
+    // Remap: when allExpanded=true show collapse (arrows face each other), else show expand
+    const SVG_ARROWS_APART   = `<polyline points="7 17 3 17 3 21"/><polyline points="21 7 21 3 17 3"/><line x1="3" y1="21" x2="9" y2="15"/><line x1="21" y1="3" x2="15" y2="9"/>`;
+    const SVG_ARROWS_TOWARDS = `<polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>`;
+
+    function updateToggleAllIcon() {
+        const anyOpen = document.querySelector('.accordion-body.open');
+        allExpanded = !!anyOpen;
+        // When expanded → show collapse arrows (facing each other)
+        toggleAllIcon.innerHTML = allExpanded ? SVG_ARROWS_TOWARDS : SVG_ARROWS_APART;
+        toggleAllBtn.setAttribute('aria-label', allExpanded ? 'Collapse all' : 'Expand all');
+    }
+
+    // keep old name so rest of code still works
+    function updateToggleAllLabel() { updateToggleAllIcon(); }
+
+    toggleAllBtn.addEventListener('click', function () {
+        if (allExpanded) {
+            document.querySelectorAll('.accordion-body.open').forEach(function (b) {
+                b.classList.remove('open');
+                b.previousElementSibling.classList.remove('open');
+            });
+        } else {
+            document.querySelectorAll('.accordion-body').forEach(function (b) {
+                b.classList.add('open');
+                b.previousElementSibling.classList.add('open');
+            });
+        }
+        updateToggleAllLabel();
+    });
+
+    document.querySelectorAll('.accordion-toggle').forEach(function (toggle) {
+        toggle.addEventListener('click', function () {
+            const body = toggle.nextElementSibling;
+            const isOpen = body.classList.contains('open');
+
+            // Collapse all
+            document.querySelectorAll('.accordion-body.open').forEach(function (b) {
+                b.classList.remove('open');
+                b.previousElementSibling.classList.remove('open');
+            });
+
+            // Expand clicked (if it was closed)
+            if (!isOpen) {
+                body.classList.add('open');
+                toggle.classList.add('open');
+            }
+            updateToggleAllLabel();
+        });
+    });
+
+    updateToggleAllLabel();
+
+    // ── Fixture click → load detail frame ──────────────────
+    document.querySelectorAll('.fixture-row').forEach(function (row) {
+        row.addEventListener('click', function () {
+            const params = new URLSearchParams({
+                league: row.dataset.league,
+                home:   row.dataset.home,
+                away:   row.dataset.away,
+                date:   row.dataset.date,
+            });
+            detailPlaceholder.classList.add('hidden');
+            detailFrame.src = '/match/?' + params.toString();
+
+            document.querySelectorAll('.fixture-row.active').forEach(function (r) {
+                r.classList.remove('active');
+            });
+            row.classList.add('active');
+        });
+    });
 }());
 </script>
 </body>
