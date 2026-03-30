@@ -267,7 +267,29 @@
         .row:last-child { border-bottom: none; }
 
         .date { color: var(--muted); }
-        .opponent { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .opponent {
+            display: grid;
+            grid-template-columns: minmax(0,1fr) auto minmax(0,1fr);
+            align-items: center;
+            gap: 6px;
+            min-width: 0;
+        }
+        .opponent .team-name:first-child { text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .opponent .team-name:last-child { text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .match-score-inline {
+            flex: 0 0 auto;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #355171;
+            border-radius: 999px;
+            padding: 1px 7px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            line-height: 1;
+            color: var(--text);
+            white-space: nowrap;
+        }
 
         .result {
             border-radius: 999px;
@@ -411,7 +433,11 @@
                         {% for item in home_form %}
                             <div class="row">
                                 <span class="date">{{ item.date }}</span>
-                                <span class="opponent">vs {{ item.opponent }}</span>
+                                <span class="opponent">
+                                    <span class="team-name">{% if item.venue == 'H' %}{{ home_team }}{% else %}{{ item.opponent }}{% endif %}</span>
+                                    <span class="match-score-inline">{% if item.venue == 'H' %}{{ item.team_goals }}-{{ item.opp_goals }}{% else %}{{ item.opp_goals }}-{{ item.team_goals }}{% endif %}</span>
+                                    <span class="team-name">{% if item.venue == 'H' %}{{ item.opponent }}{% else %}{{ home_team }}{% endif %}</span>
+                                </span>
                                 <span class="result metric-badge {{ item.result|lower }}" data-form="{{ item.result }}" data-btts="{{ item.btts|yesno:'Yes,No' }}" data-over25="{{ item.over_25|yesno:'Yes,No' }}">{{ item.result }}</span>
                             </div>
                         {% empty %}
@@ -426,7 +452,11 @@
                         {% for item in away_form %}
                             <div class="row">
                                 <span class="date">{{ item.date }}</span>
-                                <span class="opponent">vs {{ item.opponent }}</span>
+                                <span class="opponent">
+                                    <span class="team-name">{% if item.venue == 'H' %}{{ away_team }}{% else %}{{ item.opponent }}{% endif %}</span>
+                                    <span class="match-score-inline">{% if item.venue == 'H' %}{{ item.team_goals }}-{{ item.opp_goals }}{% else %}{{ item.opp_goals }}-{{ item.team_goals }}{% endif %}</span>
+                                    <span class="team-name">{% if item.venue == 'H' %}{{ item.opponent }}{% else %}{{ away_team }}{% endif %}</span>
+                                </span>
                                 <span class="result metric-badge {{ item.result|lower }}" data-form="{{ item.result }}" data-btts="{{ item.btts|yesno:'Yes,No' }}" data-over25="{{ item.over_25|yesno:'Yes,No' }}">{{ item.result }}</span>
                             </div>
                         {% empty %}
@@ -441,7 +471,11 @@
                         {% for item in home_form_home_only %}
                             <div class="row">
                                 <span class="date">{{ item.date }}</span>
-                                <span class="opponent">vs {{ item.opponent }}</span>
+                                <span class="opponent">
+                                    <span class="team-name">{{ home_team }}</span>
+                                    <span class="match-score-inline">{{ item.team_goals }}-{{ item.opp_goals }}</span>
+                                    <span class="team-name">{{ item.opponent }}</span>
+                                </span>
                                 <span class="result metric-badge {{ item.result|lower }}" data-form="{{ item.result }}" data-btts="{{ item.btts|yesno:'Yes,No' }}" data-over25="{{ item.over_25|yesno:'Yes,No' }}">{{ item.result }}</span>
                             </div>
                         {% empty %}
@@ -456,7 +490,11 @@
                         {% for item in away_form_away_only %}
                             <div class="row">
                                 <span class="date">{{ item.date }}</span>
-                                <span class="opponent">vs {{ item.opponent }}</span>
+                                <span class="opponent">
+                                    <span class="team-name">{{ item.opponent }}</span>
+                                    <span class="match-score-inline">{{ item.opp_goals }}-{{ item.team_goals }}</span>
+                                    <span class="team-name">{{ away_team }}</span>
+                                </span>
                                 <span class="result metric-badge {{ item.result|lower }}" data-form="{{ item.result }}" data-btts="{{ item.btts|yesno:'Yes,No' }}" data-over25="{{ item.over_25|yesno:'Yes,No' }}">{{ item.result }}</span>
                             </div>
                         {% empty %}

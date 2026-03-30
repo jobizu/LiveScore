@@ -257,7 +257,7 @@ def _match_played(row):
     return (row.get("FTHG") or "").strip() != "" and (row.get("FTAG") or "").strip() != ""
 
 
-def _build_team_form(rows, team_name, cutoff_date, limit=5):
+def _build_team_form(rows, team_name, cutoff_date, limit=5, venue=None):
     if not team_name:
         return []
 
@@ -279,6 +279,11 @@ def _build_team_form(rows, team_name, cutoff_date, limit=5):
         team_goals = home_goals if is_home else away_goals
         opp_goals = away_goals if is_home else home_goals
 
+        # Filter by venue if specified
+        match_venue = "H" if is_home else "A"
+        if venue and match_venue != venue:
+            continue
+
         if team_goals > opp_goals:
             result = "W"
         elif team_goals < opp_goals:
@@ -290,7 +295,7 @@ def _build_team_form(rows, team_name, cutoff_date, limit=5):
             {
                 "date": row_date.strftime("%d %b %Y"),
                 "opponent": away if is_home else home,
-                "venue": "H" if is_home else "A",
+                "venue": match_venue,
                 "score": f"{team_goals}-{opp_goals}",
                 "result": result,
                 "team_goals": team_goals,
@@ -464,8 +469,13 @@ def match_detail(request):
 
     rows = _load_europe_csv_rows()
 
-    home_form = _build_team_form(rows, home_team, selected_date)
-    away_form = _build_team_form(rows, away_team, selected_date)
+    form_limit = 5
+    fetch_limit = form_limit + 1  # Buffer for FT exclusion
+
+    home_form = _build_team_form(rows, home_team, selected_date, limit=fetch_limit)
+    away_form = _build_team_form(rows, away_team, selected_date, limit=fetch_limit)
+    home_form_home_only = _build_team_form(rows, home_team, selected_date, limit=fetch_limit, venue="H")
+    away_form_away_only = _build_team_form(rows, away_team, selected_date, limit=fetch_limit, venue="A")
     h2h_rows = _build_h2h(rows, home_team, away_team, selected_date)
     table_rows = _build_league_table(rows, league, selected_date)
 
@@ -508,7 +518,7 @@ def match_detail(request):
                 and item.get("opponent") == away_team
                 and item.get("score") == match_score
             )
-        ]
+        ][:form_limit]
 
         away_form = [
             item
@@ -519,10 +529,32 @@ def match_detail(request):
                 and item.get("opponent") == home_team
                 and item.get("score") == away_perspective_score
             )
-        ]
+        ][:form_limit]
 
-    home_form_home_only = [item for item in home_form if item.get("venue") == "H"]
-    away_form_away_only = [item for item in away_form if item.get("venue") == "A"]
+        home_form_home_only = [
+            item
+            for item in home_form_home_only
+            if not (
+                item.get("date") == selected_date_label
+                and item.get("opponent") == away_team
+                and item.get("score") == match_score
+            )
+        ][:form_limit]
+
+        away_form_away_only = [
+            item
+            for item in away_form_away_only
+            if not (
+                item.get("date") == selected_date_label
+                and item.get("opponent") == home_team
+                and item.get("score") == away_perspective_score
+            )
+        ][:form_limit]
+    else:
+        home_form = home_form[:form_limit]
+        away_form = away_form[:form_limit]
+        home_form_home_only = home_form_home_only[:form_limit]
+        away_form_away_only = away_form_away_only[:form_limit]
 
     context = {
         "league": league or "League",
