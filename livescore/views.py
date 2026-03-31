@@ -294,6 +294,8 @@ def _build_team_form(rows, team_name, cutoff_date, limit=5, venue=None):
         results.append(
             {
                 "date": row_date.strftime("%d %b %Y"),
+                "date_short": row_date.strftime("%d/%m"),
+                "date_year": row_date.strftime("%Y"),
                 "opponent": away if is_home else home,
                 "venue": match_venue,
                 "score": f"{team_goals}-{opp_goals}",

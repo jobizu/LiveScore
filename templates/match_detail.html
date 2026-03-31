@@ -256,8 +256,8 @@
 
         .row {
             display: grid;
-            grid-template-columns: 72px 1fr auto;
-            gap: 8px;
+            grid-template-columns: 54px 1fr;
+            gap: 2px;
             align-items: center;
             padding: 8px 12px;
             border-bottom: 1px solid #1e3042;
@@ -266,7 +266,15 @@
 
         .row:last-child { border-bottom: none; }
 
-        .date { color: var(--muted); }
+        .date {
+            color: var(--muted);
+            display: grid;
+            gap: 2px;
+            justify-items: start;
+            line-height: 1;
+        }
+        .date-short { font-size: 0.58rem; }
+        .date-year { font-size: 0.66rem; opacity: 0.92; }
         .opponent {
             display: grid;
             grid-template-columns: minmax(0,1fr) auto minmax(0,1fr);
@@ -289,6 +297,36 @@
             line-height: 1;
             color: var(--text);
             white-space: nowrap;
+        }
+
+        .match-score-inline.w {
+            border-color: #1f5e45;
+            background: rgba(0, 207, 123, 0.18);
+            color: #8ff6c6;
+        }
+
+        .match-score-inline.d {
+            border-color: #7a612b;
+            background: rgba(255, 193, 90, 0.24);
+            color: #ffd992;
+        }
+
+        .match-score-inline.l {
+            border-color: #74404a;
+            background: rgba(255, 100, 122, 0.22);
+            color: #ff9ead;
+        }
+
+        .match-score-inline.y {
+            border-color: #1f5e45;
+            background: rgba(0, 207, 123, 0.18);
+            color: #8ff6c6;
+        }
+
+        .match-score-inline.n {
+            border-color: #4b5563;
+            background: rgba(107, 114, 128, 0.26);
+            color: #d1d5db;
         }
 
         .result {
@@ -432,13 +470,15 @@
                     <div class="list">
                         {% for item in home_form %}
                             <div class="row">
-                                <span class="date">{{ item.date }}</span>
+                                <span class="date">
+                                    <span class="date-short">{{ item.date_short }}</span>
+                                    <span class="date-year">{{ item.date_year }}</span>
+                                </span>
                                 <span class="opponent">
                                     <span class="team-name">{% if item.venue == 'H' %}{{ home_team }}{% else %}{{ item.opponent }}{% endif %}</span>
-                                    <span class="match-score-inline">{% if item.venue == 'H' %}{{ item.team_goals }}-{{ item.opp_goals }}{% else %}{{ item.opp_goals }}-{{ item.team_goals }}{% endif %}</span>
+                                    <span class="match-score-inline {{ item.result|lower }}" data-form="{{ item.result|lower }}" data-btts="{{ item.btts|yesno:'y,n' }}" data-over25="{{ item.over_25|yesno:'y,n' }}">{% if item.venue == 'H' %}{{ item.team_goals }}-{{ item.opp_goals }}{% else %}{{ item.opp_goals }}-{{ item.team_goals }}{% endif %}</span>
                                     <span class="team-name">{% if item.venue == 'H' %}{{ item.opponent }}{% else %}{{ home_team }}{% endif %}</span>
                                 </span>
-                                <span class="result metric-badge {{ item.result|lower }}" data-form="{{ item.result }}" data-btts="{{ item.btts|yesno:'Yes,No' }}" data-over25="{{ item.over_25|yesno:'Yes,No' }}">{{ item.result }}</span>
                             </div>
                         {% empty %}
                             <div class="empty">No recent home-team matches found.</div>
@@ -451,13 +491,15 @@
                     <div class="list">
                         {% for item in away_form %}
                             <div class="row">
-                                <span class="date">{{ item.date }}</span>
+                                <span class="date">
+                                    <span class="date-short">{{ item.date_short }}</span>
+                                    <span class="date-year">{{ item.date_year }}</span>
+                                </span>
                                 <span class="opponent">
                                     <span class="team-name">{% if item.venue == 'H' %}{{ away_team }}{% else %}{{ item.opponent }}{% endif %}</span>
-                                    <span class="match-score-inline">{% if item.venue == 'H' %}{{ item.team_goals }}-{{ item.opp_goals }}{% else %}{{ item.opp_goals }}-{{ item.team_goals }}{% endif %}</span>
+                                    <span class="match-score-inline {{ item.result|lower }}" data-form="{{ item.result|lower }}" data-btts="{{ item.btts|yesno:'y,n' }}" data-over25="{{ item.over_25|yesno:'y,n' }}">{% if item.venue == 'H' %}{{ item.team_goals }}-{{ item.opp_goals }}{% else %}{{ item.opp_goals }}-{{ item.team_goals }}{% endif %}</span>
                                     <span class="team-name">{% if item.venue == 'H' %}{{ item.opponent }}{% else %}{{ away_team }}{% endif %}</span>
                                 </span>
-                                <span class="result metric-badge {{ item.result|lower }}" data-form="{{ item.result }}" data-btts="{{ item.btts|yesno:'Yes,No' }}" data-over25="{{ item.over_25|yesno:'Yes,No' }}">{{ item.result }}</span>
                             </div>
                         {% empty %}
                             <div class="empty">No recent away-team matches found.</div>
@@ -470,13 +512,15 @@
                     <div class="list">
                         {% for item in home_form_home_only %}
                             <div class="row">
-                                <span class="date">{{ item.date }}</span>
+                                <span class="date">
+                                    <span class="date-short">{{ item.date_short }}</span>
+                                    <span class="date-year">{{ item.date_year }}</span>
+                                </span>
                                 <span class="opponent">
                                     <span class="team-name">{{ home_team }}</span>
-                                    <span class="match-score-inline">{{ item.team_goals }}-{{ item.opp_goals }}</span>
+                                    <span class="match-score-inline {{ item.result|lower }}" data-form="{{ item.result|lower }}" data-btts="{{ item.btts|yesno:'y,n' }}" data-over25="{{ item.over_25|yesno:'y,n' }}">{{ item.team_goals }}-{{ item.opp_goals }}</span>
                                     <span class="team-name">{{ item.opponent }}</span>
                                 </span>
-                                <span class="result metric-badge {{ item.result|lower }}" data-form="{{ item.result }}" data-btts="{{ item.btts|yesno:'Yes,No' }}" data-over25="{{ item.over_25|yesno:'Yes,No' }}">{{ item.result }}</span>
                             </div>
                         {% empty %}
                             <div class="empty">No home matches found.</div>
@@ -489,13 +533,15 @@
                     <div class="list">
                         {% for item in away_form_away_only %}
                             <div class="row">
-                                <span class="date">{{ item.date }}</span>
+                                <span class="date">
+                                    <span class="date-short">{{ item.date_short }}</span>
+                                    <span class="date-year">{{ item.date_year }}</span>
+                                </span>
                                 <span class="opponent">
                                     <span class="team-name">{{ item.opponent }}</span>
-                                    <span class="match-score-inline">{{ item.opp_goals }}-{{ item.team_goals }}</span>
+                                    <span class="match-score-inline {{ item.result|lower }}" data-form="{{ item.result|lower }}" data-btts="{{ item.btts|yesno:'y,n' }}" data-over25="{{ item.over_25|yesno:'y,n' }}">{{ item.opp_goals }}-{{ item.team_goals }}</span>
                                     <span class="team-name">{{ away_team }}</span>
                                 </span>
-                                <span class="result metric-badge {{ item.result|lower }}" data-form="{{ item.result }}" data-btts="{{ item.btts|yesno:'Yes,No' }}" data-over25="{{ item.over_25|yesno:'Yes,No' }}">{{ item.result }}</span>
                             </div>
                         {% empty %}
                             <div class="empty">No away matches found.</div>
@@ -575,7 +621,7 @@
         const formTabLabel = document.getElementById('formTabLabel');
         const formMenu = document.getElementById('formMenu');
         const formMenuItems = Array.from(document.querySelectorAll('.form-menu-item'));
-        const metricBadges = Array.from(document.querySelectorAll('.metric-badge'));
+        const scorePills = Array.from(document.querySelectorAll('.match-score-inline'));
         let currentMode = 'form';
 
         function closeFormMenu() {
@@ -609,22 +655,18 @@
 
         function applyFormMetric(mode) {
             currentMode = mode;
-            metricBadges.forEach(function (badge) {
-                let textValue = badge.dataset.form || '';
-                let toneClass = (badge.dataset.form || '').toLowerCase();
+            scorePills.forEach(function (pill) {
+                let toneClass = pill.dataset.form || '';
 
                 if (mode === 'btts') {
-                    textValue = badge.dataset.btts || 'No';
-                    toneClass = textValue === 'Yes' ? 'y' : 'n';
+                    toneClass = pill.dataset.btts || 'n';
                 } else if (mode === 'over25') {
-                    textValue = badge.dataset.over25 || 'No';
-                    toneClass = textValue === 'Yes' ? 'y' : 'n';
+                    toneClass = pill.dataset.over25 || 'n';
                 }
 
-                badge.textContent = textValue;
-                badge.classList.remove('w', 'd', 'l', 'y', 'n');
+                pill.classList.remove('w', 'd', 'l', 'y', 'n');
                 if (toneClass) {
-                    badge.classList.add(toneClass);
+                    pill.classList.add(toneClass);
                 }
             });
 
