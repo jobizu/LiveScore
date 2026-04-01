@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from io import StringIO
 from pathlib import Path
+import unicodedata
 
 import requests
 
@@ -50,6 +51,23 @@ OUTPUT_HEADERS = [
     "Source",
 ]
 
+TEAM_NAME_ALIASES = {
+    "spurs": "tottenham",
+    "man utd": "man united",
+    # Turkish team names - keys are already diacritic-stripped (post-NFD)
+    "genclerbirligi": "genclerbirligi",
+    "fenerbahce": "fenerbahce",
+    "goztepe": "goztepe",
+    "goztep": "goztepe",
+    "caykur rizespor": "rizespor",
+    "eyupspor": "eyupspor",
+    "fatih karagumruk": "karagumruk",
+    "basaksehir": "istanbul basaksehir",
+    "istanbul basaksehir": "istanbul basaksehir",
+    "buyuksehyr": "istanbul basaksehir",
+    "kasimpasa": "kasimpasa",
+}
+
 
 def fetch_text(url: str, timeout: int) -> str:
     response = requests.get(
@@ -63,11 +81,12 @@ def fetch_text(url: str, timeout: int) -> str:
 
 
 def normalize_team(name: str) -> str:
-    aliases = {
-        "spurs": "tottenham",
-        "man utd": "man united",
-    }
-    return aliases.get((name or "").strip().lower(), (name or "").strip().lower())
+    raw = (name or "").strip().lower()
+    normalized = "".join(
+        char for char in unicodedata.normalize("NFKD", raw) if not unicodedata.combining(char)
+    )
+    normalized = " ".join(normalized.split())
+    return TEAM_NAME_ALIASES.get(normalized, normalized)
 
 
 def parse_result_cell(result_value: str) -> tuple[str, str, str]:
@@ -104,6 +123,36 @@ def split_fixture_datetime(value: str) -> tuple[str, str]:
 
 def as_date(value: str) -> datetime:
     return datetime.strptime((value or "").strip(), "%d/%m/%Y")
+
+
+def row_datetime(row: dict[str, str]) -> datetime:
+    date_raw = (row.get("Date") or "").strip()
+    time_raw = (row.get("Time") or "00:00").strip() or "00:00"
+    try:
+        return datetime.strptime(f"{date_raw} {time_raw}", "%d/%m/%Y %H:%M")
+    except ValueError:
+        try:
+            return as_date(date_raw)
+        except ValueError:
+            return datetime.max
+
+
+def is_better_row(current: dict[str, str], candidate: dict[str, str]) -> bool:
+    current_played = bool((current.get("FTHG") or "").strip() and (current.get("FTAG") or "").strip())
+    candidate_played = bool((candidate.get("FTHG") or "").strip() and (candidate.get("FTAG") or "").strip())
+    if candidate_played != current_played:
+        return candidate_played
+
+    current_priority = 2 if (current.get("Source") or "").strip() == "football-data" else 1
+    candidate_priority = 2 if (candidate.get("Source") or "").strip() == "football-data" else 1
+    if candidate_priority != current_priority:
+        return candidate_priority > current_priority
+
+    return len((candidate.get("HomeTeam") or "").strip()) + len((candidate.get("AwayTeam") or "").strip()) > len((current.get("HomeTeam") or "").strip()) + len((current.get("AwayTeam") or "").strip())
+
+
+def is_single_pair_season_competition(comp: CompetitionConfig) -> bool:
+    return comp.code == "T1"
 
 
 def load_results_rows(comp: CompetitionConfig, timeout: int) -> list[dict[str, str]]:
@@ -146,14 +195,9 @@ def merge_fixture_rows(comp: CompetitionConfig, current_rows: list[dict[str, str
     reader = csv.DictReader(StringIO(text))
     fixture_rows = list(reader)
 
-    existing = {
-        (
-            row["Date"],
-            normalize_team(row["HomeTeam"]),
-            normalize_team(row["AwayTeam"]),
-        )
-        for row in current_rows
-    }
+    existing_by_key = {}
+    for index, row in enumerate(current_rows):
+        existing_by_key[(normalize_team(row["HomeTeam"]), normalize_team(row["AwayTeam"]))] = index
 
     added = 0
     for row in fixture_rows:
@@ -163,27 +207,41 @@ def merge_fixture_rows(comp: CompetitionConfig, current_rows: list[dict[str, str
         if not date_raw or not home or not away:
             continue
 
-        key = (date_raw, normalize_team(home), normalize_team(away))
-        if key in existing:
+        key = (normalize_team(home), normalize_team(away))
+        fthg, ftag, ftr = parse_result_cell(row.get("Result") or "")
+        candidate_row = {
+            "Competition": comp.name,
+            "Country": comp.country,
+            "Code": comp.code,
+            "Date": date_raw,
+            "Time": time_raw,
+            "HomeTeam": home,
+            "AwayTeam": away,
+            "FTHG": fthg,
+            "FTAG": ftag,
+            "FTR": ftr,
+            "Source": "fixturedownload",
+        }
+
+        existing_index = existing_by_key.get(key)
+        if existing_index is None:
+            current_rows.append(candidate_row)
+            existing_by_key[key] = len(current_rows) - 1
+            added += 1
             continue
 
-        fthg, ftag, ftr = parse_result_cell(row.get("Result") or "")
-        current_rows.append(
-            {
-                "Competition": comp.name,
-                "Country": comp.country,
-                "Code": comp.code,
-                "Date": date_raw,
-                "Time": time_raw,
-                "HomeTeam": home,
-                "AwayTeam": away,
-                "FTHG": fthg,
-                "FTAG": ftag,
-                "FTR": ftr,
-                "Source": "fixturedownload",
-            }
-        )
-        existing.add(key)
+        existing_row = current_rows[existing_index]
+        if is_single_pair_season_competition(comp):
+            if is_better_row(existing_row, candidate_row):
+                current_rows[existing_index] = candidate_row
+            continue
+
+        if abs((row_datetime(candidate_row).date() - row_datetime(existing_row).date()).days) <= 2:
+            if is_better_row(existing_row, candidate_row):
+                current_rows[existing_index] = candidate_row
+            continue
+
+        current_rows.append(candidate_row)
         added += 1
 
     return current_rows, added

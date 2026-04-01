@@ -1,7 +1,8 @@
 ﻿import csv
 from collections import OrderedDict
-from datetime import date, datetime
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
+import unicodedata
 
 import requests
 from django.conf import settings
@@ -25,12 +26,194 @@ COUNTRY_FLAG_CODES = {
     "World": "un",
 }
 
+TEAM_NAME_ALIASES = {
+    "spurs": "tottenham",
+    "man utd": "man united",
+    # Turkish team names - keys are already diacritic-stripped (post-NFD)
+    "genclerbirligi": "genclerbirligi",
+    "fenerbahce": "fenerbahce",
+    "goztepe": "goztepe",
+    "goztep": "goztepe",
+    "caykur rizespor": "rizespor",
+    "eyupspor": "eyupspor",
+    "fatih karagumruk": "karagumruk",
+    "basaksehir": "istanbul basaksehir",
+    "istanbul basaksehir": "istanbul basaksehir",
+    "buyuksehyr": "istanbul basaksehir",
+    "kasimpasa": "kasimpasa",
+}
+
+
+# Maps football-data ASCII-garbled Turkish team names to proper display forms.
+# Keys are lowercase as they appear in the CSV (football-data source).
+DISPLAY_NAME_OVERRIDES = {
+    "besiktas": "Beşiktaş",
+    "buyuksehyr": "Istanbul Başakşehir",
+    "istanbul basaksehir": "Istanbul Başakşehir",
+    "eyupspor": "Eyüpspor",
+    "fenerbahce": "Fenerbahçe",
+    "genclerbirligi": "Gençlerbirligi",
+    "goztep": "Göztepe",
+    "karagumruk": "Fatih Karagümrük",
+    "kasimpasa": "Kasımpaşa",
+    "rizespor": "Çaykur Rizespor",
+}
+
+
+def _display_team_name(name):
+    """Return the proper display form for a team name, fixing football-data garbled names."""
+    raw = (name or "").strip()
+    return DISPLAY_NAME_OVERRIDES.get(raw.lower(), raw)
+
+
+def _format_kickoff_eat_from_csv(date_raw, time_raw):
+    """Convert a CSV UTC kickoff date/time pair to an EAT display string."""
+    date_value = (date_raw or "").strip()
+    time_value = (time_raw or "").strip() or "00:00"
+    if not date_value:
+        return "TBD"
+    try:
+        utc_dt = datetime.strptime(f"{date_value} {time_value}", "%d/%m/%Y %H:%M").replace(tzinfo=timezone.utc)
+        eat_dt = utc_dt.astimezone(timezone(timedelta(hours=3)))
+        return eat_dt.strftime("%d/%m/%Y %H:%M")
+    except ValueError:
+        return f"{date_value} {time_value}".strip()
+
+
+def _format_kickoff_eat_from_iso(iso_raw):
+    """Convert an ISO datetime string to an EAT display string."""
+    value = (iso_raw or "").strip()
+    if not value:
+        return "TBD"
+    try:
+        normalized = value.replace("Z", "+00:00")
+        parsed = datetime.fromisoformat(normalized)
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=timezone.utc)
+        eat_dt = parsed.astimezone(timezone(timedelta(hours=3)))
+        return eat_dt.strftime("%d/%m/%Y %H:%M")
+    except ValueError:
+        return value.replace("T", " ")[:16]
+
 
 def _country_flag_url(country_name):
     code = COUNTRY_FLAG_CODES.get((country_name or "").strip())
     if not code:
         return ""
     return f"https://flagcdn.com/w40/{code}.png"
+
+
+def _normalize_team_name(name):
+    raw = (name or "").strip().lower()
+    if not raw:
+        return ""
+
+    normalized = "".join(
+        char for char in unicodedata.normalize("NFKD", raw) if not unicodedata.combining(char)
+    )
+    normalized = " ".join(normalized.split())
+    return TEAM_NAME_ALIASES.get(normalized, normalized)
+
+
+def _fixture_identity(row):
+    return (
+        (row.get("Competition") or "").strip().casefold(),
+        _normalize_team_name(row.get("HomeTeam") or ""),
+        _normalize_team_name(row.get("AwayTeam") or ""),
+    )
+
+
+def _fixture_sort_datetime(row):
+    date_raw = (row.get("Date") or "").strip()
+    time_raw = (row.get("Time") or "00:00").strip() or "00:00"
+    try:
+        return datetime.strptime(f"{date_raw} {time_raw}", "%d/%m/%Y %H:%M")
+    except ValueError:
+        try:
+            return datetime.strptime(date_raw, "%d/%m/%Y")
+        except ValueError:
+            return datetime.max
+
+
+def _fixture_source_priority(row):
+    return 2 if (row.get("Source") or "").strip() == "football-data" else 1
+
+
+def _is_single_pair_season_competition(row):
+    competition = (row.get("Competition") or "").strip()
+    code = (row.get("Code") or "").strip()
+    return competition == "Turkish Super Lig" or code == "T1"
+
+
+def _prefer_fixture_row(current, candidate):
+    current_played = _match_played(current)
+    candidate_played = _match_played(candidate)
+
+    # For Turkish Super Lig: fixturedownload has correct local dates and proper
+    # diacritic-bearing team names, so always prefer it over football-data regardless
+    # of which row has scores.
+    if _is_single_pair_season_competition(current) and _is_single_pair_season_competition(candidate):
+        current_src = (current.get("Source") or "").strip()
+        candidate_src = (candidate.get("Source") or "").strip()
+        if current_src != candidate_src:
+            if current_src == "fixturedownload":
+                return False  # keep current (fixturedownload)
+            if candidate_src == "fixturedownload":
+                return True   # upgrade to fixturedownload
+
+    # For all other competitions: if one row has scores and the other doesn't, prefer the one with scores
+    if candidate_played and not current_played:
+        return True
+    if not candidate_played and current_played:
+        return False
+
+    current_priority = _fixture_source_priority(current)
+    candidate_priority = _fixture_source_priority(candidate)
+    if candidate_priority != current_priority:
+        return candidate_priority > current_priority
+
+    return len((candidate.get("HomeTeam") or "").strip()) + len((candidate.get("AwayTeam") or "").strip()) > len((current.get("HomeTeam") or "").strip()) + len((current.get("AwayTeam") or "").strip())
+
+
+def _dedupe_fixture_rows(rows):
+    deduped = []
+    grouped_indexes = {}
+
+    for row in sorted(rows, key=_fixture_sort_datetime):
+        fixture_id = _fixture_identity(row)
+        fixture_dt = _fixture_sort_datetime(row)
+        existing_index = grouped_indexes.get(fixture_id)
+        if existing_index is None:
+            grouped_indexes[fixture_id] = len(deduped)
+            deduped.append(row)
+            continue
+
+        existing_row = deduped[existing_index]
+        existing_dt = _fixture_sort_datetime(existing_row)
+        if _is_single_pair_season_competition(row) and _is_single_pair_season_competition(existing_row):
+            # Only merge when dates are within 4 days (handles UTC vs UTC+3 shifts).
+            # Larger gaps mean a rescheduled / genuinely different matchday — treat as separate.
+            if existing_dt != datetime.max and fixture_dt != datetime.max:
+                day_diff = abs((fixture_dt.date() - existing_dt.date()).days)
+                if day_diff <= 4:
+                    if _prefer_fixture_row(existing_row, row):
+                        deduped[existing_index] = row
+                    continue
+            # Dates too far apart — append as a new row
+            grouped_indexes[fixture_id] = len(deduped)
+            deduped.append(row)
+            continue
+
+        if existing_dt != datetime.max and fixture_dt != datetime.max:
+            if abs((fixture_dt.date() - existing_dt.date()).days) <= 2:
+                if _prefer_fixture_row(existing_row, row):
+                    deduped[existing_index] = row
+                continue
+
+        grouped_indexes[fixture_id] = len(deduped)
+        deduped.append(row)
+
+    return deduped
 
 
 def _friendly_api_error(response):
@@ -89,7 +272,7 @@ def _map_fixtures(rows):
                 "away_logo": (teams.get("away") or {}).get("logo", ""),
                 "home_score": goals.get("home", "-") if goals.get("home") is not None else "-",
                 "away_score": goals.get("away", "-") if goals.get("away") is not None else "-",
-                "kickoff": str(fixture.get("date", "")).replace("T", " ")[:16] or "TBD",
+                "kickoff": _format_kickoff_eat_from_iso(fixture.get("date", "")),
                 "link": "https://www.api-football.com/",
             }
         )
@@ -147,6 +330,7 @@ def _fetch_fixtures_for_date(selected_date):
     api_error = ""
     api_access_error = False
     selected_date_label = "Today" if selected_date == date.today() else f"{selected_date.day} {selected_date.strftime('%b %Y')}"
+    seen_fixture_keys = set()
 
     csv_path = Path(settings.BASE_DIR) / "data" / "europe_top10_2025_2026.csv"
     target_date = selected_date.strftime("%d/%m/%Y")
@@ -171,46 +355,58 @@ def _fetch_fixtures_for_date(selected_date):
         api_error = f"Europe CSV file not found: {csv_path}. Run scripts/scrape_europe_top10_2526.py first."
     else:
         try:
-            with csv_path.open("r", encoding="utf-8-sig", errors="replace", newline="") as csv_file:
-                reader = csv.DictReader(csv_file)
-                required = {"Competition", "Country", "Date", "Time", "HomeTeam", "AwayTeam", "FTHG", "FTAG"}
-                if not reader.fieldnames or not required.issubset(set(reader.fieldnames)):
-                    missing = required.difference(set(reader.fieldnames or []))
-                    api_error = f"Europe CSV is missing required columns: {', '.join(sorted(missing))}."
-                else:
-                    for row in reader:
-                        row_date = (row.get("Date") or "").strip()
-                        if row_date != target_date:
-                            continue
+            rows = _load_europe_csv_rows()
+            required = {"Competition", "Country", "Date", "Time", "HomeTeam", "AwayTeam", "FTHG", "FTAG"}
+            if not rows:
+                rows = []
+            csv_headers = set(rows[0].keys()) if rows else required
+            if not required.issubset(csv_headers):
+                missing = required.difference(csv_headers)
+                api_error = f"Europe CSV is missing required columns: {', '.join(sorted(missing))}."
+            else:
+                for row in rows:
+                    row_date = (row.get("Date") or "").strip()
+                    if row_date != target_date:
+                        continue
 
-                        competition_name = (row.get("Competition") or "").strip() or "League"
-                        country_name = (row.get("Country") or "").strip()
-                        if competition_name in league_counts:
-                            league_counts[competition_name] += 1
-                        else:
-                            league_counts[competition_name] = 1
+                    fixture_key = (
+                        ((row.get("Competition") or "").strip().casefold()),
+                        row_date,
+                        _normalize_team_name(row.get("HomeTeam") or ""),
+                        _normalize_team_name(row.get("AwayTeam") or ""),
+                    )
+                    if fixture_key in seen_fixture_keys:
+                        continue
+                    seen_fixture_keys.add(fixture_key)
 
-                        home_goals_raw = (row.get("FTHG") or "").strip()
-                        away_goals_raw = (row.get("FTAG") or "").strip()
-                        played = home_goals_raw != "" and away_goals_raw != ""
+                    competition_name = (row.get("Competition") or "").strip() or "League"
+                    country_name = (row.get("Country") or "").strip()
+                    if competition_name in league_counts:
+                        league_counts[competition_name] += 1
+                    else:
+                        league_counts[competition_name] = 1
 
-                        matches.append(
-                            {
-                                "league": competition_name,
-                                "league_logo": "",
-                                "country": country_name,
-                                "status": "FT" if played else "NS",
-                                "minute": "",
-                                "home": (row.get("HomeTeam") or "Home").strip(),
-                                "home_logo": "",
-                                "away": (row.get("AwayTeam") or "Away").strip(),
-                                "away_logo": "",
-                                "home_score": home_goals_raw if played else "-",
-                                "away_score": away_goals_raw if played else "-",
-                                "kickoff": f"{row_date} {(row.get('Time') or '').strip()}".strip(),
-                                "link": "#",
-                            }
-                        )
+                    home_goals_raw = (row.get("FTHG") or "").strip()
+                    away_goals_raw = (row.get("FTAG") or "").strip()
+                    played = home_goals_raw != "" and away_goals_raw != ""
+
+                    matches.append(
+                        {
+                            "league": competition_name,
+                            "league_logo": "",
+                            "country": country_name,
+                            "status": "FT" if played else "NS",
+                            "minute": "",
+                            "home": _display_team_name((row.get("HomeTeam") or "Home").strip()),
+                            "home_logo": "",
+                            "away": _display_team_name((row.get("AwayTeam") or "Away").strip()),
+                            "away_logo": "",
+                            "home_score": home_goals_raw if played else "-",
+                            "away_score": away_goals_raw if played else "-",
+                            "kickoff": _format_kickoff_eat_from_csv(row_date, (row.get("Time") or "").strip()),
+                            "link": "#",
+                        }
+                    )
         except OSError as exc:
             api_error = f"Unable to read Europe CSV: {exc}"
 
@@ -248,7 +444,7 @@ def _load_europe_csv_rows():
         return []
     try:
         with csv_path.open("r", encoding="utf-8-sig", errors="replace", newline="") as csv_file:
-            return list(csv.DictReader(csv_file))
+            return _dedupe_fixture_rows(list(csv.DictReader(csv_file)))
     except OSError:
         return []
 
