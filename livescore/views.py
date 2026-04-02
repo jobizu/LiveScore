@@ -2,6 +2,7 @@
 from collections import OrderedDict
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
+import re
 import unicodedata
 
 import requests
@@ -438,6 +439,53 @@ def _parse_csv_date(value):
         return None
 
 
+def _parse_forebet_result(value):
+    raw = (value or "").strip()
+    if not raw:
+        return None
+
+    match = re.match(r"^(?P<home>.+?)\s+(?P<home_score>\d+)\s+-\s+(?P<away_score>\d+)\s+(?P<away>.+)$", raw)
+    if not match:
+        return None
+
+    return {
+        "home": _display_team_name(match.group("home")),
+        "away": _display_team_name(match.group("away")),
+        "home_score": match.group("home_score"),
+        "away_score": match.group("away_score"),
+    }
+
+
+def _read_forebet_results_for_date(csv_path, target_date):
+    if not csv_path.exists():
+        return None, f"Results file not found: {csv_path.name}."
+
+    matches = []
+    try:
+        with csv_path.open("r", encoding="utf-8-sig", errors="replace", newline="") as f:
+            for row in csv.DictReader(f):
+                if (row.get("Date") or "").strip() != target_date:
+                    continue
+                parsed_result = _parse_forebet_result(row.get("Result") or "")
+                if not parsed_result:
+                    continue
+
+                matches.append(
+                    {
+                        "home": parsed_result["home"],
+                        "away": parsed_result["away"],
+                        "status": "FT",
+                        "home_score": parsed_result["home_score"],
+                        "away_score": parsed_result["away_score"],
+                        "kickoff": "",
+                    }
+                )
+    except OSError as exc:
+        return None, f"Could not read results CSV: {exc}"
+
+    return matches, ""
+
+
 def _load_europe_csv_rows():
     csv_path = Path(settings.BASE_DIR) / "data" / "europe_top10_2025_2026.csv"
     if not csv_path.exists():
@@ -608,6 +656,38 @@ def _build_league_table(rows, league_name, cutoff_date):
         item["rank"] = index
 
     return table_rows
+
+
+def epl_fixtures_api(request):
+    """Return Premier League results from the Forebet EPL results CSV for a given date."""
+    selected_date, has_explicit_date = _selected_date_from_request(request)
+
+    if request.GET.get("date") and not has_explicit_date:
+        return JsonResponse({"error": "Invalid date format. Use ?date=YYYY-MM-DD."}, status=400)
+
+    target_date = selected_date.strftime("%d/%m/%Y")
+    csv_path = Path(settings.BASE_DIR) / "data" / "epl_forebet_results_2025_2026.csv"
+    matches, error = _read_forebet_results_for_date(csv_path, target_date)
+    if matches is None:
+        return JsonResponse({"error": f"Could not read Forebet EPL results: {error}"}, status=500)
+
+    return JsonResponse({"date": selected_date.isoformat(), "matches": matches})
+
+
+def laliga_results_api(request):
+    """Return La Liga results from the Forebet La Liga results CSV for a given date."""
+    selected_date, has_explicit_date = _selected_date_from_request(request)
+
+    if request.GET.get("date") and not has_explicit_date:
+        return JsonResponse({"error": "Invalid date format. Use ?date=YYYY-MM-DD."}, status=400)
+
+    target_date = selected_date.strftime("%d/%m/%Y")
+    csv_path = Path(settings.BASE_DIR) / "data" / "laliga_forebet_results_2025_2026.csv"
+    matches, error = _read_forebet_results_for_date(csv_path, target_date)
+    if matches is None:
+        return JsonResponse({"error": f"Could not read Forebet La Liga results: {error}"}, status=500)
+
+    return JsonResponse({"date": selected_date.isoformat(), "matches": matches})
 
 
 def fixtures_api(request):

@@ -17,12 +17,14 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from livescore.views import csv_view, fixtures_api, home, match_detail
+from livescore.views import csv_view, epl_fixtures_api, fixtures_api, home, laliga_results_api, match_detail
 
 urlpatterns = [
     path('', home, name='home'),
     path('match/', match_detail, name='match_detail'),
     path('csv/', csv_view, name='csv_view'),
     path('api/fixtures/', fixtures_api, name='fixtures_api'),
+    path('api/epl-fixtures/', epl_fixtures_api, name='epl_fixtures_api'),
+    path('api/laliga-results/', laliga_results_api, name='laliga_results_api'),
     path('admin/', admin.site.urls),
 ]

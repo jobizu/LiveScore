@@ -5,26 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LiveScore</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Barlow:wght@500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Geist:wght@100;200;300;400;500;600;700&display=swap');
 
         :root {
-            --bg: #0b121b;
-            --panel: #111b28;
-            --line: #223447;
-            --text: #e8f1fb;
-            --muted: #97abc0;
-            --green: #00cf7b;
-            --danger: #ff647a;
-            --amber: #ffc15a;
+            --font-walsheim: 'Geist', sans-serif;
+            --bg: #0f1115;
+            --panel: #171a20;
+            --line: #000;
+            --text: #f1f4f8;
+            --muted: #9ba5b3;
+            --green: #86e24f;
+            --danger: #ff6b80;
+            --amber: #ffcf66;
         }
 
         * { box-sizing: border-box; }
 
         body {
             margin: 0;
-            font-family: 'Barlow', sans-serif;
+            font-family: var(--font-walsheim);
             color: var(--text);
-            background: radial-gradient(circle at 100% 0%, #0f3354 0%, transparent 35%), linear-gradient(180deg, #091019 0%, #0c1420 100%);
+            background: #000;
         }
 
         .layout {
@@ -33,14 +34,14 @@
             margin: 0 auto;
             padding: 20px;
             display: grid;
-            grid-template-columns: 430px minmax(0, 1fr);
+            grid-template-columns: 1fr;
             gap: 18px;
         }
 
         .main {
             border: 1px solid var(--line);
             border-radius: 12px;
-            background: var(--panel);
+            background: #000;
             overflow: hidden;
             position: sticky;
             top: 76px;
@@ -48,6 +49,288 @@
             display: flex;
             flex-direction: column;
             z-index: 1;
+        }
+
+        .main-content {
+            padding: 14px;
+            display: grid;
+            gap: 12px;
+            background: #000;
+        }
+
+        .date-nav-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            width: 100%;
+            background: rgb(26 26 26);
+            border: 1px solid #353c45;
+            border-radius: 12px;
+            padding: 10px 12px;
+        }
+
+        .date-nav-btn {
+            border: none;
+            background: rgb(74 74 74);
+            color: var(--text);
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .date-nav-label {
+            font-size: 0.98rem;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: 0.02em;
+            text-transform: none;
+        }
+
+        .date-nav-date-wrap {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .date-nav-trigger {
+            border: none;
+            background: transparent;
+            color: inherit;
+            font: inherit;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 0;
+            cursor: pointer;
+        }
+
+        .date-nav-caret {
+            color: var(--muted);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .main-content {
+            position: relative;
+        }
+
+        .main-cal-popup {
+            position: absolute;
+            top: 62px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: min(320px, calc(100% - 8px));
+            background: #111;
+            border: 1px solid #000;
+            border-radius: 12px;
+            padding: 10px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+            z-index: 30;
+            display: none;
+        }
+
+        .main-cal-popup.open {
+            display: block;
+        }
+
+        .main-cal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            color: var(--text);
+            font-size: 0.88rem;
+            font-weight: 700;
+        }
+
+        .main-cal-nav {
+            border: none;
+            background: rgb(74 74 74);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            color: var(--text);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        .main-cal-grid {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(0, 1fr));
+            gap: 4px;
+        }
+
+        .main-cal-dow {
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 4px 0;
+        }
+
+        .main-cal-day {
+            border: none;
+            background: #171717;
+            color: var(--text);
+            border-radius: 8px;
+            height: 30px;
+            font-family: var(--font-walsheim);
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        .main-cal-day.is-empty {
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .main-cal-day.is-selected {
+            background: rgb(74 74 74);
+            color: #fff;
+            font-weight: 700;
+        }
+
+        .main-cal-day.is-today {
+            border: 1px solid #ffffff;
+        }
+
+        .mini-league-card {
+            width: 100%;
+            background: rgb(26 26 26);
+            border: 1px solid #000;
+            border-radius: 12px;
+            overflow: hidden;
+            padding: 0;
+            display: grid;
+            gap: 0;
+        }
+
+        .mini-league-head {
+            display: grid;
+            gap: 2px;
+        }
+
+        .mini-league-toggle {
+            width: 100%;
+            border: none;
+            background: rgb(45 45 45);
+            color: inherit;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            cursor: pointer;
+            text-align: left;
+        }
+
+        .mini-league-meta {
+            display: grid;
+            gap: 2px;
+            min-width: 0;
+        }
+
+        .mini-league-chevron {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--muted);
+            transition: transform 0.18s ease;
+            flex-shrink: 0;
+        }
+
+        .mini-league-card.open .mini-league-chevron {
+            transform: rotate(180deg);
+        }
+
+        .mini-league-title {
+            color: var(--text);
+            font-size: 12px;
+            font-weight: 500;
+            line-height: 1;
+        }
+
+        .mini-league-country {
+            color: var(--muted);
+            font-size: 0.76rem;
+            font-weight: 600;
+            line-height: 1.2;
+        }
+
+        .mini-fixture-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: grid;
+            gap: 0;
+        }
+
+        .mini-league-body {
+            display: none;
+            background: rgb(26 26 26);
+            border-radius: 0;
+            padding: 0;
+            width: 100%;
+        }
+
+        .mini-league-card.open .mini-league-body {
+            display: block;
+        }
+
+        .mini-fixture-item {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+            align-items: center;
+            justify-items: center;
+            gap: 8px;
+            padding: 7px 8px;
+            border-radius: 0;
+            background: rgb(26 26 26);
+            border: none;
+            border-bottom: 0.5px solid rgb(45 45 45);
+        }
+
+        .mini-fixture-item:last-child {
+            border-bottom: none;
+        }
+
+        .mini-team {
+            color: var(--text);
+            font-size: 12px;
+            font-weight: 500;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .mini-team.away {
+            text-align: center;
+        }
+
+        .mini-mid {
+            color: var(--muted);
+            font-size: 0.74rem;
+            font-weight: 700;
+            padding: 0;
+            border: none;
+            background: transparent;
+        }
+
+        .mini-mid.is-score {
+            color: #fff;
+            background: transparent;
+            border: none;
         }
 
         .detail-body {
@@ -184,7 +467,6 @@
 
         #prevDayBtn { border-right: 1px solid #2a4059; }
         #nextDayBtn { border-left: 1px solid #2a4059; }
-
         .day-nav-btn:hover {
             border-color: var(--green);
             background: #122131;
@@ -204,7 +486,7 @@
             border-radius: 0;
             padding: 7px 14px;
             color: var(--text);
-            font-family: 'Barlow', sans-serif;
+            font-family: var(--font-walsheim);
             font-size: 0.88rem;
             font-weight: 600;
             cursor: pointer;
@@ -290,7 +572,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-family: 'Barlow', sans-serif;
+            font-family: var(--font-walsheim);
             font-size: 0.83rem;
             font-weight: 600;
             color: var(--text);
@@ -335,15 +617,17 @@
         .match-card {
             border: 1px solid #2a4056;
             border-radius: 10px;
-            background: #132132;
+            background: #14181e;
             padding: 10px;
             cursor: pointer;
-            transition: border-color 0.15s, background 0.15s;
+            transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
         }
 
         .match-card:hover {
             border-color: #3a5a78;
-            background: #16273b;
+            background: #19212b;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
         }
 
         .match-card.is-active {
@@ -409,7 +693,7 @@
         }
 
         .team-row .score {
-            font-family: 'Barlow', sans-serif;
+            font-family: var(--font-walsheim);
             font-weight: 700;
             min-width: 20px;
             text-align: right;
@@ -447,9 +731,9 @@
         }
 
         .sidebar {
-            border: 1px solid var(--line);
+            border: none;
             border-radius: 12px;
-            background: var(--panel);
+            background: transparent;
             overflow-y: auto;
             position: sticky;
             top: 76px;
@@ -466,25 +750,37 @@
 
         .sidebar h2 {
             margin: 0;
-            padding: 8px 12px;
+            padding: 12px 12px;
             font-size: 0.84rem;
             letter-spacing: 0.08em;
             text-transform: uppercase;
             color: #a9c0d8;
-            border-bottom: 1px solid var(--line);
-            background: #152435;
+            border-bottom: none;
+            background: transparent;
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 8px;
             position: sticky;
-            top: 0;
+            top: 56px;
             z-index: 10;
         }
 
-        .sidebar h2 .date-picker-wrap { margin-top: 0; }
-        .sidebar h2 .day-nav-btn { width: 26px; height: 26px; }
-        .sidebar h2 .date-btn { padding: 4px 8px; font-size: 0.76rem; gap: 5px; }
+        .sidebar-date-nav {
+            padding: 10px 8px;
+            border-bottom: none;
+            background: transparent;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 11;
+        }
+
+        .sidebar-date-nav .date-picker-wrap {
+            margin: 0;
+        }
 
         .toggle-all-btn {
             display: inline-flex;
@@ -520,27 +816,30 @@
             border: 1px solid transparent;
             border-radius: 8px;
             padding: 7px 8px;
-            background: transparent;
+            background: #171a20;
             display: flex;
             align-items: center;
             gap: 8px;
             cursor: pointer;
-            transition: background 0.15s;
+            transition: background 0.15s, box-shadow 0.15s;
             text-decoration: none;
             color: var(--text);
             width: 100%;
             text-align: left;
             font: inherit;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
         }
 
         .league-item:hover {
-            background: #122131;
+            background: #20252d;
             border-color: #2a4158;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
         }
 
         .league-item.active {
-            background: #13253a;
+            background: #222831;
             border-color: #3b5b79;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
         }
 
         .league-logo {
@@ -611,20 +910,22 @@
             border: 1px solid transparent;
             border-radius: 8px;
             padding: 7px 8px;
-            background: transparent;
+            background: #171a20;
             display: flex;
             align-items: center;
             gap: 8px;
             cursor: pointer;
-            transition: background 0.15s, border-color 0.15s;
+            transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
             color: var(--text);
             font: inherit;
             text-align: left;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
         }
 
         .accordion-toggle:hover {
-            background: #122131;
+            background: #20252d;
             border-color: #2a4158;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
         }
 
         .accordion-toggle.open {
@@ -668,16 +969,17 @@
             gap: 5px;
             border: none;
             border-bottom: 1px solid #152333;
-            background: transparent;
+            background: #14181e;
             cursor: pointer;
             font: inherit;
             color: var(--text);
-            transition: background 0.12s;
+            transition: background 0.12s, box-shadow 0.12s;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
         }
 
         .fixture-row:last-child { border-bottom: none; }
 
-        .fixture-row:hover { background: #122131; }
+        .fixture-row:hover { background: #20252d; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4); }
 
         .fixture-row.active { background: #13253a; }
 
@@ -797,7 +1099,7 @@
             max-width: 1300px;
             margin: 0 auto;
             padding: 0 20px;
-            height: 56px;
+            height: 108px;
             display: flex;
             align-items: center;
             gap: 24px;
@@ -808,6 +1110,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            margin-left: 8px;
             flex-shrink: 0;
         }
 
@@ -826,14 +1129,15 @@
         }
 
         .logo-text {
-            font-size: 1.15rem;
+            font-size: 2.3rem;
             font-weight: 700;
-            color: var(--text);
+            color: #ffffff;
             letter-spacing: -0.02em;
+            text-transform: uppercase;
         }
 
         .logo-text span {
-            color: var(--green);
+            color: #ffffff;
         }
 
         .header-nav {
@@ -854,7 +1158,6 @@
             transition: color 0.15s, background 0.15s;
         }
 
-        .nav-link:hover,
         .nav-link.active {
             color: var(--text);
             background: #122133;
@@ -893,7 +1196,7 @@
             border: none;
             outline: none;
             color: var(--text);
-            font-family: 'Barlow', sans-serif;
+            font-family: var(--font-walsheim);
             font-size: 0.86rem;
             width: 100%;
         }
@@ -906,26 +1209,350 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            margin-left: auto;
             flex-shrink: 0;
         }
 
         .icon-btn {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: #0f1e2e;
-            border: 1px solid #1e3650;
+            width: auto;
+            height: auto;
+            border-radius: 0;
+            background: transparent;
+            border: none;
+            padding: 4px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: var(--muted);
             cursor: pointer;
+            transition: color 0.15s;
+        }
+
+        .icon-btn:focus-visible {
+            outline: 2px solid var(--green);
+            outline-offset: 2px;
+        }
+
+        .icon-btn svg {
+            width: 2rem;
+            height: 2rem;
+            stroke-width: 2.1;
+        }
+
+        .header-actions {
+            position: relative;
+        }
+
+        .theme-dropdown {
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            min-width: 150px;
+            background: #171a20;
+            border: 1px solid #353c45;
+            border-radius: 10px;
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+            padding: 8px;
+            display: none;
+            z-index: 200;
+        }
+
+        .theme-dropdown.open {
+            display: block;
+        }
+
+        .theme-option {
+            width: 100%;
+            border: none;
+            background: transparent;
+            color: var(--text);
+            text-align: left;
+            padding: 8px 10px;
+            border-radius: 8px;
+            font-family: var(--font-walsheim);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .theme-option.active {
+            background: #222831;
+            color: var(--green);
+        }
+
+        body.light-theme {
+            --bg: #f4f6f9;
+            --panel: #ffffff;
+            --line: #d8dde5;
+            --text: #1d2733;
+            --muted: #5d6b7a;
+            background: linear-gradient(180deg, #f7f9fc 0%, #eef2f7 100%);
+        }
+
+        body.light-theme .site-header {
+            background: #ffffff;
+            border-bottom-color: #d8dde5;
+        }
+
+        body.light-theme .header-search,
+        body.light-theme .store-link,
+        body.light-theme .footer-social a,
+        body.light-theme .theme-dropdown {
+            background: #ffffff;
+            border-color: #d8dde5;
+        }
+
+        body.light-theme .site-footer {
+            background: #f2f5f9;
+            border-top-color: #d8dde5;
+        }
+
+        body.light-theme .theme-option.active {
+            background: #eef2f7;
+            color: #0a7f3f;
+        }
+
+        /* ── Footer ─────────────────────────────────── */
+        .site-footer {
+            margin-top: 26px;
+            border-top: 1px solid #1a2f44;
+            background:
+                radial-gradient(circle at 10% 10%, rgba(0, 207, 123, 0.14) 0%, transparent 32%),
+                radial-gradient(circle at 85% 20%, rgba(0, 173, 239, 0.14) 0%, transparent 30%),
+                #08121d;
+        }
+
+        .footer-inner {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 26px 20px 20px;
+            display: grid;
+            gap: 22px;
+        }
+
+        .footer-top {
+            display: grid;
+            grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+            gap: 20px;
+            align-items: end;
+            border-bottom: 1px solid #1a2f44;
+            padding-bottom: 18px;
+        }
+
+        .footer-brand h3 {
+            margin: 0;
+            font-size: 1.1rem;
+            letter-spacing: 0.01em;
+        }
+
+        .footer-brand p {
+            margin: 8px 0 0;
+            color: var(--muted);
+            font-size: 0.86rem;
+            max-width: 560px;
+        }
+
+        .app-links {
+            display: flex;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .store-link {
+            text-decoration: none;
+            border: 1px solid #29435b;
+            background: #0f1e2f;
+            color: var(--text);
+            border-radius: 999px;
+            padding: 8px 12px;
+            font-size: 0.76rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            transition: border-color 0.15s, color 0.15s, background 0.15s;
+        }
+
+        .store-link:hover {
+            border-color: var(--green);
+            color: var(--green);
+            background: #112436;
+        }
+
+        .footer-links {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .footer-col h4 {
+            margin: 0 0 9px;
+            color: #9fc0de;
+            font-size: 0.72rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .footer-col a {
+            display: block;
+            color: var(--muted);
+            font-size: 0.8rem;
+            text-decoration: none;
+            margin-top: 7px;
+            transition: color 0.15s;
+        }
+
+        .footer-col a:hover {
+            color: var(--text);
+        }
+
+        .footer-bottom {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 10px 16px;
+            align-items: center;
+            color: #7f95ad;
+            font-size: 0.75rem;
+        }
+
+        .footer-social {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .footer-social a {
+            text-decoration: none;
+            color: #a0b8d0;
+            border: 1px solid #274157;
+            background: #0f1e2f;
+            border-radius: 999px;
+            padding: 4px 9px;
+            font-size: 0.72rem;
+            font-weight: 600;
             transition: border-color 0.15s, color 0.15s;
         }
 
-        .icon-btn:hover {
-            border-color: #004d30;
+        .footer-social a:hover {
+            border-color: var(--green);
             color: var(--green);
+        }
+
+        /* ── FotMob-like dark pattern overrides ────────────────────────── */
+        .site-header {
+            background: rgb(26 26 26);
+            border-bottom-color: #000;
+        }
+
+        .sidebar,
+        .site-footer {
+            background: #171a20;
+            border-color: #000;
+        }
+
+        .main {
+            background: #000;
+            border-color: #000;
+        }
+
+        .feed-head,
+        .sidebar h2,
+        .sidebar-date-nav {
+            background: #1c2027;
+            border-bottom-color: #2a2f36;
+        }
+
+        .detail-body,
+        .detail-frame,
+        .detail-placeholder,
+        .match-list,
+        .accordion-body,
+        .date-combo,
+        .cal-popup,
+        .header-search,
+        .store-link,
+        .footer-social a {
+            background: #14181e;
+            border-color: #000;
+        }
+
+        .detail-placeholder {
+            background: linear-gradient(180deg, #1a1f27 0%, #14181e 100%);
+        }
+
+        .league-item:hover,
+        .accordion-toggle:hover,
+        .fixture-row:hover,
+        .match-card:hover,
+        .nav-link:hover,
+        .nav-link.active {
+            background: #20252d;
+            border-color: #353c45;
+        }
+
+        .league-item.active,
+        .accordion-toggle.open,
+        .fixture-row.active,
+        .match-card.is-active {
+            background: #222831;
+            border-color: #4b5663;
+        }
+
+        .match-card,
+        .accordion-toggle,
+        .fixture-row,
+        .toggle-all-btn,
+        .cal-nav,
+        .day-nav-btn,
+        .following-mark,
+        .league-logo,
+        .league-logo-placeholder,
+        .ft-chip,
+        .header-search,
+        .icon-btn,
+        .store-link,
+        .footer-social a {
+            border-color: #000;
+        }
+
+        .league-count {
+            background: rgba(134, 226, 79, 0.16);
+            color: var(--green);
+        }
+
+        .state.live,
+        .fix-mid.is-score,
+        .logo-text span,
+        .nav-link.active,
+        .date-btn .btn-label,
+        .date-btn svg,
+        .store-link:hover,
+        .footer-social a:hover {
+            color: var(--green);
+        }
+
+        .state.live {
+            border-color: #3f6c2a;
+            background: rgba(134, 226, 79, 0.12);
+        }
+
+        .logo-mark {
+            background: linear-gradient(135deg, #9bf65c, #6ccc39);
+            color: #13180f;
+        }
+
+        .site-footer {
+            border-top-color: #2a2f36;
+            background:
+                radial-gradient(circle at 12% 12%, rgba(134, 226, 79, 0.11) 0%, transparent 30%),
+                radial-gradient(circle at 88% 14%, rgba(255, 255, 255, 0.05) 0%, transparent 26%),
+                #12161c;
+        }
+
+        .footer-top {
+            border-bottom-color: #2a2f36;
         }
 
         @media (max-width: 1024px) {
@@ -933,10 +1560,83 @@
         }
 
         @media (max-width: 900px) {
-            .layout { grid-template-columns: 1fr; }
+            .header-inner { padding: 0 14px; height: 101px; gap: 12px; }
+            .logo-mark { width: 26px; height: 26px; font-size: 0.9rem; }
+            .logo-text { font-size: 2rem; }
+            .icon-btn svg { width: 1.7rem; height: 1.7rem; }
+            .layout {
+                grid-template-columns: 1fr;
+                width: 95%;
+                max-width: none;
+                padding: 0;
+                margin: 0 auto;
+            }
+            .main { display: flex; position: static; top: auto; height: auto; }
             .header-nav { display: none; }
             .header-search { width: 170px; }
             .header-search:focus-within { width: 200px; }
+            .league-list { padding: 0; gap: 6px; }
+            .league-list > li { width: 100%; }
+            .league-list > li > .accordion-toggle,
+            .league-list > li > .accordion-body { width: 100%; }
+            .accordion-toggle { padding: 6px; gap: 6px; }
+            .league-logo,
+            .league-logo-placeholder,
+            .following-mark { width: 18px; height: 18px; }
+            .league-name {
+                font-size: 0.78rem;
+                white-space: normal;
+                overflow: visible;
+                text-overflow: clip;
+                line-height: 1.2;
+            }
+            .league-country {
+                font-size: 0.67rem;
+                white-space: normal;
+                overflow: visible;
+                text-overflow: clip;
+                line-height: 1.2;
+            }
+            .league-count {
+                font-size: 0.64rem;
+                padding: 1px 5px;
+            }
+            .fixture-row { gap: 4px; padding: 6px; }
+            .ft-slot { width: 20px; }
+            .fix-mid {
+                min-width: 32px;
+                font-size: 0.68rem;
+                text-align: left;
+            }
+            .fix-home,
+            .fix-away {
+                flex: 0 1 34%;
+                text-align: left;
+                font-size: 0.73rem;
+            }
+            .footer-top { grid-template-columns: 1fr; align-items: start; }
+            .app-links { justify-content: flex-start; }
+            .footer-links { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+
+        @media (max-width: 560px) {
+            .header-inner { padding: 0 10px; height: 92px; gap: 8px; }
+            .logo-mark { width: 24px; height: 24px; font-size: 0.85rem; }
+            .logo-text { font-size: 1.9rem; }
+            .icon-btn svg { width: 1.6rem; height: 1.6rem; }
+            .header-search { display: none; }
+            .icon-btn { padding: 3px; }
+            .main-content { padding: 10px; }
+            .date-nav-card { padding: 9px 10px; border-radius: 10px; }
+            .date-nav-label { font-size: 0.82rem; }
+            .main-cal-popup { top: 58px; }
+            .mini-league-card { padding: 0; }
+            .mini-league-toggle { padding: 10px; }
+            .mini-league-title { font-size: 12px; }
+
+            .mini-mid { font-size: 0.7rem; }
+            .footer-links { grid-template-columns: 1fr; }
+            .footer-bottom { align-items: flex-start; }
         }
     </style>
 </head>
@@ -945,8 +1645,7 @@
         <div class="header-inner">
             <!-- Logo -->
             <a href="/" class="logo">
-                <div class="logo-mark">LS</div>
-                <span class="logo-text">Live<span>Score</span></span>
+                <span class="logo-text">Dimba</span>
             </a>
 
             <!-- Nav links -->
@@ -967,578 +1666,438 @@
                 <input type="search" placeholder="Search teams, leagues..." aria-label="Search">
             </div>
 
-            <!-- User icon -->
+            <!-- Header actions -->
             <div class="header-actions">
-                <button class="icon-btn" aria-label="Account">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                        <circle cx="12" cy="7" r="4"/>
+                <button class="icon-btn" aria-label="Search">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="7"/>
+                        <line x1="20" y1="20" x2="16.5" y2="16.5"/>
                     </svg>
                 </button>
+                <button class="icon-btn settings-btn" id="themeToggleBtn" aria-label="Settings" aria-expanded="false" aria-haspopup="true">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 0 1-4 0v-.09a1.7 1.7 0 0 0-1-1.55 1.7 1.7 0 0 0-1.88.34l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.88 1.7 1.7 0 0 0-1.55-1H3a2 2 0 0 1 0-4h.09a1.7 1.7 0 0 0 1.55-1 1.7 1.7 0 0 0-.34-1.88l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.88.34h0a1.7 1.7 0 0 0 1-1.55V3a2 2 0 0 1 4 0v.09a1.7 1.7 0 0 0 1 1.55h0a1.7 1.7 0 0 0 1.88-.34l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.88v0a1.7 1.7 0 0 0 1.55 1H21a2 2 0 0 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1z"/>
+                    </svg>
+                </button>
+                <div class="theme-dropdown" id="themeDropdown" role="menu" aria-label="Theme selector">
+                    <button class="theme-option" type="button" data-theme="dark">Dark Theme</button>
+                    <button class="theme-option" type="button" data-theme="light">White Theme</button>
+                </div>
             </div>
         </div>
     </header>
 
     <div class="layout">
-        <aside class="sidebar">
-            <h2>Leagues
-                <button class="toggle-all-btn" id="toggleAllBtn" type="button" aria-label="Expand all">
-                    <!-- expand icon: arrows pointing away -->
-                    <svg id="toggleAllIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="7 17 3 17 3 21"/>
-                        <polyline points="21 7 21 3 17 3"/>
-                        <line x1="3" y1="21" x2="9" y2="15"/>
-                        <line x1="21" y1="3" x2="15" y2="9"/>
-                    </svg>
-                </button>
-                <div class="date-picker-wrap">
-                    <div class="date-combo">
-                        <button class="day-nav-btn" id="prevDayBtn" type="button" aria-label="Previous day">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="15 18 9 12 15 6"/>
-                            </svg>
+        <section class="main">
+            <div class="main-content">
+                <div class="date-nav-card" aria-label="Date navigation">
+                    <button class="date-nav-btn" id="mainPrevDateBtn" type="button" aria-label="Previous day">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15 18 9 12 15 6"/>
+                        </svg>
+                    </button>
+                    <span class="date-nav-date-wrap">
+                        <button class="date-nav-trigger" id="mainDateDropdownBtn" type="button" aria-haspopup="dialog" aria-expanded="false" aria-label="Open calendar">
+                            <span class="date-nav-label" id="mainDateLabel" data-selected-date="{{ selected_date|default:'' }}">{{ selected_date_label|default:'Today' }}</span>
+                            <span class="date-nav-caret" aria-hidden="true">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                    <polygon points="6,9 18,9 12,15"/>
+                                </svg>
+                            </span>
                         </button>
-
-                        <button class="date-btn" id="dateBtn" aria-haspopup="true" aria-expanded="false" data-selected-date="{{ selected_date }}">
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                                <line x1="16" y1="2" x2="16" y2="6"/>
-                                <line x1="8" y1="2" x2="8" y2="6"/>
-                                <line x1="3" y1="10" x2="21" y2="10"/>
-                            </svg>
-                            <span id="dateBtnLabel" class="btn-label">{{ selected_date_label }}</span>
-                        </button>
-
-                        <button class="day-nav-btn" id="nextDayBtn" type="button" aria-label="Next day">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="9 18 15 12 9 6"/>
-                            </svg>
-                        </button>
-                    </div>
-
-                    <div class="cal-popup" id="calPopup" role="dialog" aria-modal="true" aria-label="Pick a date">
-                        <div class="cal-header">
-                            <button class="cal-nav" id="calPrev" aria-label="Previous month">
-                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-                            </button>
-                            <span class="month-label" id="calMonthLabel"></span>
-                            <button class="cal-nav" id="calNext" aria-label="Next month">
-                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-                            </button>
-                        </div>
-                        <div class="cal-grid" id="calGrid"></div>
-                    </div>
+                    </span>
+                    <button class="date-nav-btn" id="mainNextDateBtn" type="button" aria-label="Next day">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"/>
+                        </svg>
+                    </button>
                 </div>
-            </h2>
-            <ul class="league-list">
-                {% if match_groups %}
-                    <li id="followingCard" style="display:none;">
-                        <button class="accordion-toggle" type="button" id="followingToggle">
-                            <span class="following-mark" aria-hidden="true">★</span>
-                            <div class="league-info">
-                                <div class="league-name">Following</div>
-                                <div class="league-country">Starred matches</div>
-                            </div>
-                            <span class="league-count" id="followingCount">0</span>
-                            <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <div class="main-cal-popup" id="mainCalPopup" role="dialog" aria-modal="false" aria-label="Calendar">
+                    <div class="main-cal-header">
+                        <button class="main-cal-nav" id="mainCalPrev" type="button" aria-label="Previous month">&#8249;</button>
+                        <span id="mainCalMonthLabel"></span>
+                        <button class="main-cal-nav" id="mainCalNext" type="button" aria-label="Next month">&#8250;</button>
+                    </div>
+                    <div class="main-cal-grid" id="mainCalGrid"></div>
+                </div>
+
+                <article class="mini-league-card open" id="eplCard" aria-label="League fixtures">
+                    <button class="mini-league-toggle" type="button" aria-expanded="true" aria-label="Toggle Premier League fixtures">
+                        <span class="mini-league-meta">
+                            <span class="mini-league-title">Premier League</span>
+                        </span>
+                        <span class="mini-league-chevron" aria-hidden="true">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                                 <polyline points="6 9 12 15 18 9"/>
                             </svg>
-                        </button>
-                        <div class="accordion-body" id="followingBody">
-                            <div class="following-empty" id="followingEmpty">No followed matches yet.</div>
-                        </div>
-                    </li>
-                    {% for group in match_groups %}
-                        <li>
-                            <button class="accordion-toggle" type="button">
-                                {% if group.flag_url %}
-                                    <img class="league-logo" src="{{ group.flag_url }}" alt="{{ group.country }} flag" loading="lazy">
-                                {% else %}
-                                    <div class="league-logo-placeholder"></div>
-                                {% endif %}
-                                <div class="league-info">
-                                    <div class="league-name">{{ group.league }}</div>
-                                    {% if group.country %}<div class="league-country">{{ group.country }}</div>{% endif %}
-                                </div>
-                                <span class="league-count">{{ group.matches|length }}</span>
-                                <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                    <polyline points="6 9 12 15 18 9"/>
-                                </svg>
-                            </button>
-                            <div class="accordion-body">
-                                {% for match in group.matches %}
-                                    <button class="fixture-row" type="button"
-                                        data-league="{{ group.league }}"
-                                        data-home="{{ match.home }}"
-                                        data-away="{{ match.away }}"
-                                        data-date="{{ selected_date }}">
-                                        <span class="ft-slot">{% if match.status == 'FT' %}<span class="ft-chip">FT</span>{% endif %}</span>
-                                        <span class="fix-home">{{ match.home }}</span>
-                                        <span class="fix-mid{% if match.status == 'FT' %} is-score{% endif %}">
-                                            {% if match.status == 'FT' %}{{ match.home_score }}-{{ match.away_score }}{% else %}{{ match.kickoff|slice:"11:" }}{% endif %}
-                                        </span>
-                                        <span class="fix-away">{{ match.away }}</span>
-                                        <span class="fixture-star" role="button" tabindex="0" aria-label="Follow match" title="Follow match">★</span>
-                                    </button>
-                                {% endfor %}
-                            </div>
-                        </li>
-                    {% endfor %}
-                {% else %}
-                    <li style="padding:10px;color:var(--muted);font-size:0.82rem;">{% if api_access_error %}Unable to load leagues.{% else %}No fixtures on {{ selected_date_label|lower }}.{% endif %}</li>
-                {% endif %}
-            </ul>
-        </aside>
-
-        <section class="main">
-            <div class="feed-head">
-                <h1>Match Detail</h1>
-            </div>
-
-            <div class="detail-body">
-                <div class="detail-placeholder" id="detailPlaceholder">
-                    <div>
-                        <strong>No match selected</strong>
-                        <div style="margin-top:8px;">Match details will appear here.</div>
+                        </span>
+                    </button>
+                    <div class="mini-league-body">
+                        <ul class="mini-fixture-list" id="eplFixtureList">
+                            <li class="mini-fixture-item mini-fixture-loading">
+                                <span style="color:var(--muted);font-size:12px;">Loading results&hellip;</span>
+                            </li>
+                        </ul>
                     </div>
-                </div>
-                <iframe class="detail-frame" id="detailFrame" title="Match details" loading="lazy"></iframe>
+                </article>
+
+                <article class="mini-league-card open" id="laLigaCard" aria-label="La Liga results">
+                    <button class="mini-league-toggle" type="button" aria-expanded="true" aria-label="Toggle La Liga results">
+                        <span class="mini-league-meta">
+                            <span class="mini-league-title">La Liga</span>
+                        </span>
+                        <span class="mini-league-chevron" aria-hidden="true">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"/>
+                            </svg>
+                        </span>
+                    </button>
+                    <div class="mini-league-body">
+                        <ul class="mini-fixture-list" id="laLigaFixtureList">
+                            <li class="mini-fixture-item mini-fixture-loading">
+                                <span style="color:var(--muted);font-size:12px;">Loading results&hellip;</span>
+                            </li>
+                        </ul>
+                    </div>
+                </article>
             </div>
         </section>
     </div>
 
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <div class="footer-top">
+                <div class="footer-brand">
+                    <h3>LiveScore</h3>
+                    <p>Fast football scores and fixtures.</p>
+                </div>
+                <div class="app-links">
+                    <a class="store-link" href="#" aria-label="Download LiveScore app">Get the App</a>
+                </div>
+            </div>
+
+            <div class="footer-links">
+                <div class="footer-col">
+                    <h4>Matches</h4>
+                    <a href="#">Today</a>
+                    <a href="#">Leagues</a>
+                </div>
+                <div class="footer-col">
+                    <h4>Support</h4>
+                    <a href="#">Help</a>
+                    <a href="#">Privacy</a>
+                </div>
+                <div class="footer-col">
+                    <h4>Company</h4>
+                    <a href="#">About</a>
+                    <a href="#">Contact</a>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <div>© 2026 LiveScore</div>
+                <div class="footer-social">
+                    <a href="#" aria-label="LiveScore on X">X</a>
+                    <a href="#" aria-label="LiveScore on Instagram">Instagram</a>
+                </div>
+            </div>
+        </div>
+    </footer>
 <script>
 (function () {
-    const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-    const DAYS   = ["Su","Mo","Tu","We","Th","Fr","Sa"];
-
-    const btn        = document.getElementById('dateBtn');
-    const btnLabel   = document.getElementById('dateBtnLabel');
-    const popup      = document.getElementById('calPopup');
-    const grid       = document.getElementById('calGrid');
-    const monthLabel = document.getElementById('calMonthLabel');
-    const prevBtn    = document.getElementById('calPrev');
-    const nextBtn    = document.getElementById('calNext');
-    const prevDayBtn = document.getElementById('prevDayBtn');
-    const nextDayBtn = document.getElementById('nextDayBtn');
-    const detailFrame = document.getElementById('detailFrame');
-    const detailPlaceholder = document.getElementById('detailPlaceholder');
-    const followingCard = document.getElementById('followingCard');
-    const followingBody = document.getElementById('followingBody');
-    const followingCount = document.getElementById('followingCount');
-    const followingEmpty = document.getElementById('followingEmpty');
-    const FOLLOWING_KEY = 'livescore:following:matches';
-
-    const selectedDateValue = btn.dataset.selectedDate;
-    const todayDate  = new Date();
-    todayDate.setHours(0,0,0,0);
+    const body = document.body;
+    const toggleBtn = document.getElementById('themeToggleBtn');
+    const dropdown = document.getElementById('themeDropdown');
+    const options = dropdown ? Array.from(dropdown.querySelectorAll('.theme-option')) : [];
+    const mainDateLabel = document.getElementById('mainDateLabel');
+    const prevDateBtn = document.getElementById('mainPrevDateBtn');
+    const nextDateBtn = document.getElementById('mainNextDateBtn');
+    const dateDropdownBtn = document.getElementById('mainDateDropdownBtn');
+    const mainCalPopup = document.getElementById('mainCalPopup');
+    const mainCalPrev = document.getElementById('mainCalPrev');
+    const mainCalNext = document.getElementById('mainCalNext');
+    const mainCalMonthLabel = document.getElementById('mainCalMonthLabel');
+    const mainCalGrid = document.getElementById('mainCalGrid');
+    const STORAGE_KEY = 'dimba:theme';
+    const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    const DAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 
     function parseIsoDate(value) {
-        if (!value) {
-            return new Date(todayDate);
-        }
-
+        if (!value) return new Date();
         const parts = value.split('-').map(Number);
-        if (parts.length !== 3 || parts.some(Number.isNaN)) {
-            return new Date(todayDate);
-        }
-
+        if (parts.length !== 3 || parts.some(Number.isNaN)) return new Date();
         return new Date(parts[0], parts[1] - 1, parts[2]);
     }
 
-    function toIsoDate(value) {
-        const year = value.getFullYear();
-        const month = String(value.getMonth() + 1).padStart(2, '0');
-        const day = String(value.getDate()).padStart(2, '0');
-        return year + '-' + month + '-' + day;
+    function formatLabel(value) {
+        return value.toLocaleDateString('en-US', {
+            weekday: 'long',
+            month: 'long',
+            day: 'numeric'
+        });
     }
 
-    function goToDate(value) {
-        const nextUrl = new URL(window.location.href);
-        nextUrl.searchParams.set('date', toIsoDate(value));
-        window.location.href = nextUrl.toString();
-    }
+    function setDateLabel(value) {
+        if (!mainDateLabel) return;
+        const today = new Date();
+        const yesterday = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1);
+        const tomorrow = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
 
-    function shiftDate(value, amount) {
-        const nextValue = new Date(value);
-        nextValue.setDate(nextValue.getDate() + amount);
-        return nextValue;
-    }
+        if (isSameDay(value, today)) {
+            mainDateLabel.textContent = 'Today';
+            return;
+        }
 
-    let selected  = parseIsoDate(selectedDateValue);
-    let cursor    = new Date(selected.getFullYear(), selected.getMonth(), 1);
+        if (isSameDay(value, yesterday)) {
+            mainDateLabel.textContent = 'Yesterday';
+            return;
+        }
 
-    function fmt(d) {
-        const weekday = d.toLocaleDateString('en-GB', { weekday: 'short' });
-        const day = String(d.getDate());
-        const month = d.toLocaleDateString('en-GB', { month: 'short' });
-        return weekday + ' ' + day + ' ' + month;
-    }
+        if (isSameDay(value, tomorrow)) {
+            mainDateLabel.textContent = 'Tomorrow';
+            return;
+        }
 
-    function isToday(d) {
-        return d.getFullYear() === todayDate.getFullYear() &&
-               d.getMonth()    === todayDate.getMonth()    &&
-               d.getDate()     === todayDate.getDate();
+        mainDateLabel.textContent = formatLabel(value);
     }
 
     function isSameDay(a, b) {
         return a.getFullYear() === b.getFullYear() &&
-               a.getMonth()    === b.getMonth()    &&
-               a.getDate()     === b.getDate();
+            a.getMonth() === b.getMonth() &&
+            a.getDate() === b.getDate();
     }
 
-    function renderCalendar() {
-        monthLabel.textContent = MONTHS[cursor.getMonth()] + ' ' + cursor.getFullYear();
-        grid.innerHTML = '';
+    function setTheme(theme) {
+        const isLight = theme === 'light';
+        body.classList.toggle('light-theme', isLight);
+        localStorage.setItem(STORAGE_KEY, isLight ? 'light' : 'dark');
 
-        // Day-of-week headers
-        DAYS.forEach(function(d) {
-            const el = document.createElement('div');
-            el.className = 'cal-dow';
-            el.textContent = d;
-            grid.appendChild(el);
+        options.forEach(function (option) {
+            option.classList.toggle('active', option.dataset.theme === (isLight ? 'light' : 'dark'));
         });
+    }
 
-        const firstDay = new Date(cursor.getFullYear(), cursor.getMonth(), 1).getDay();
-        const daysInMonth = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 0).getDate();
+    function closeDropdown() {
+        if (!dropdown || !toggleBtn) return;
+        dropdown.classList.remove('open');
+        toggleBtn.setAttribute('aria-expanded', 'false');
+    }
 
-        // Empty cells before 1st
-        for (let i = 0; i < firstDay; i++) {
-            const el = document.createElement('button');
-            el.className = 'cal-day empty';
-            el.disabled = true;
-            grid.appendChild(el);
+    function toggleDropdown() {
+        if (!dropdown || !toggleBtn) return;
+        const open = dropdown.classList.toggle('open');
+        toggleBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+
+    const savedTheme = localStorage.getItem(STORAGE_KEY);
+    setTheme(savedTheme === 'light' ? 'light' : 'dark');
+
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', function (event) {
+            event.stopPropagation();
+            toggleDropdown();
+        });
+    }
+
+    options.forEach(function (option) {
+        option.addEventListener('click', function () {
+            setTheme(option.dataset.theme === 'light' ? 'light' : 'dark');
+            closeDropdown();
+        });
+    });
+
+    document.addEventListener('click', function (event) {
+        if (!dropdown || !toggleBtn) return;
+        if (!dropdown.contains(event.target) && !toggleBtn.contains(event.target)) {
+            closeDropdown();
+        }
+    });
+
+    if (mainDateLabel && prevDateBtn && nextDateBtn) {
+        let currentDate = parseIsoDate(mainDateLabel.dataset.selectedDate || '');
+        let currentCursor = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+        setDateLabel(currentDate);
+
+        function openMainCal() {
+            if (!mainCalPopup || !dateDropdownBtn) return;
+            mainCalPopup.classList.add('open');
+            dateDropdownBtn.setAttribute('aria-expanded', 'true');
         }
 
-        for (let d = 1; d <= daysInMonth; d++) {
-            const date = new Date(cursor.getFullYear(), cursor.getMonth(), d);
-            const el = document.createElement('button');
-            el.className = 'cal-day';
-            el.textContent = d;
+        function closeMainCal() {
+            if (!mainCalPopup || !dateDropdownBtn) return;
+            mainCalPopup.classList.remove('open');
+            dateDropdownBtn.setAttribute('aria-expanded', 'false');
+        }
 
-            if (isToday(date))       el.classList.add('today');
-            if (isSameDay(date, selected)) el.classList.add('selected');
+        function renderMainCalendar() {
+            if (!mainCalGrid || !mainCalMonthLabel) return;
+            mainCalMonthLabel.textContent = MONTHS[currentCursor.getMonth()] + ' ' + currentCursor.getFullYear();
+            mainCalGrid.innerHTML = '';
 
-            el.addEventListener('click', function () {
-                selected = date;
-                btnLabel.textContent = fmt(date);
-                closePopup();
-                renderCalendar();
-                goToDate(date);
+            DAYS.forEach(function (day) {
+                const dow = document.createElement('div');
+                dow.className = 'main-cal-dow';
+                dow.textContent = day;
+                mainCalGrid.appendChild(dow);
             });
 
-            grid.appendChild(el);
-        }
-    }
+            const firstDay = new Date(currentCursor.getFullYear(), currentCursor.getMonth(), 1).getDay();
+            const daysInMonth = new Date(currentCursor.getFullYear(), currentCursor.getMonth() + 1, 0).getDate();
 
-    function positionPopup() {
-        const GAP = 8;
-        const MARGIN = 8;
-        const btnRect = btn.getBoundingClientRect();
+            for (let i = 0; i < firstDay; i++) {
+                const empty = document.createElement('button');
+                empty.type = 'button';
+                empty.className = 'main-cal-day is-empty';
+                mainCalGrid.appendChild(empty);
+            }
 
-        // Temporarily show off-screen to measure size when closed.
-        const wasOpen = popup.classList.contains('open');
-        if (!wasOpen) {
-            popup.style.visibility = 'hidden';
-            popup.style.display = 'block';
-        }
-
-        const popupWidth = popup.offsetWidth;
-        const popupHeight = popup.offsetHeight;
-
-        let left = btnRect.left;
-        let top = btnRect.bottom + GAP;
-
-        if (left + popupWidth > window.innerWidth - MARGIN) {
-            left = window.innerWidth - popupWidth - MARGIN;
-        }
-        if (left < MARGIN) {
-            left = MARGIN;
-        }
-
-        if (top + popupHeight > window.innerHeight - MARGIN) {
-            const aboveTop = btnRect.top - popupHeight - GAP;
-            if (aboveTop >= MARGIN) {
-                top = aboveTop;
-            } else {
-                top = Math.max(MARGIN, window.innerHeight - popupHeight - MARGIN);
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(currentCursor.getFullYear(), currentCursor.getMonth(), day);
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'main-cal-day';
+                if (isSameDay(date, new Date())) {
+                    btn.classList.add('is-today');
+                }
+                if (isSameDay(date, currentDate)) {
+                    btn.classList.add('is-selected');
+                }
+                btn.textContent = String(day);
+                btn.addEventListener('click', function () {
+                    currentDate = date;
+                    setDateLabel(currentDate);
+                    refreshAllLeagueCards(currentDate);
+                    renderMainCalendar();
+                    closeMainCal();
+                });
+                mainCalGrid.appendChild(btn);
             }
         }
 
-        popup.style.left = left + 'px';
-        popup.style.top = top + 'px';
-
-        if (!wasOpen) {
-            popup.style.display = '';
-            popup.style.visibility = '';
-        }
-    }
-
-    function openPopup() {
-        positionPopup();
-        popup.classList.add('open');
-        btn.setAttribute('aria-expanded', 'true');
-    }
-
-    function closePopup() {
-        popup.classList.remove('open');
-        btn.setAttribute('aria-expanded', 'false');
-    }
-
-    btn.addEventListener('click', function (e) {
-        e.stopPropagation();
-        popup.classList.contains('open') ? closePopup() : openPopup();
-    });
-
-    window.addEventListener('resize', function () {
-        if (popup.classList.contains('open')) positionPopup();
-    });
-
-    document.addEventListener('scroll', function () {
-        if (popup.classList.contains('open')) positionPopup();
-    }, true);
-
-    prevBtn.addEventListener('click', function () {
-        cursor.setMonth(cursor.getMonth() - 1);
-        renderCalendar();
-    });
-
-    nextBtn.addEventListener('click', function () {
-        cursor.setMonth(cursor.getMonth() + 1);
-        renderCalendar();
-    });
-
-    prevDayBtn.addEventListener('click', function () {
-        goToDate(shiftDate(selected, -1));
-    });
-
-    nextDayBtn.addEventListener('click', function () {
-        goToDate(shiftDate(selected, 1));
-    });
-
-    // Close when clicking outside
-    document.addEventListener('click', function (e) {
-        if (!popup.contains(e.target) && !btn.contains(e.target)) closePopup();
-    });
-
-    // Close on Escape
-    document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') closePopup();
-    });
-
-    btnLabel.textContent = fmt(selected);
-    renderCalendar();
-
-    // ── Accordion ──────────────────────────────────────────
-    const toggleAllBtn = document.getElementById('toggleAllBtn');
-    const toggleAllIcon = document.getElementById('toggleAllIcon');
-    let allExpanded = false;
-
-    // Expand icon: arrows pointing away from centre
-    const SVG_EXPAND = `<polyline points="7 17 3 17 3 21"/><polyline points="21 7 21 3 17 3"/><line x1="3" y1="21" x2="9" y2="15"/><line x1="21" y1="3" x2="15" y2="9"/>`;
-    // Collapse icon: arrows pointing toward centre
-    const SVG_COLLAPSE = `<polyline points="3 15 3 21 9 21"/><polyline points="21 9 21 3 15 3"/><line x1="21" y1="3" x2="15" y2="9"/><line x1="3" y1="21" x2="9" y2="15"/>`;
-
-    // Remap: when allExpanded=true show collapse (arrows face each other), else show expand
-    const SVG_ARROWS_APART   = `<polyline points="7 17 3 17 3 21"/><polyline points="21 7 21 3 17 3"/><line x1="3" y1="21" x2="9" y2="15"/><line x1="21" y1="3" x2="15" y2="9"/>`;
-    const SVG_ARROWS_TOWARDS = `<polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>`;
-
-    function updateToggleAllIcon() {
-        const anyOpen = document.querySelector('.accordion-body.open');
-        allExpanded = !!anyOpen;
-        // When expanded → show collapse arrows (facing each other)
-        toggleAllIcon.innerHTML = allExpanded ? SVG_ARROWS_TOWARDS : SVG_ARROWS_APART;
-        toggleAllBtn.setAttribute('aria-label', allExpanded ? 'Collapse all' : 'Expand all');
-    }
-
-    // keep old name so rest of code still works
-    function updateToggleAllLabel() { updateToggleAllIcon(); }
-
-    toggleAllBtn.addEventListener('click', function () {
-        if (allExpanded) {
-            document.querySelectorAll('.accordion-body.open').forEach(function (b) {
-                b.classList.remove('open');
-                b.previousElementSibling.classList.remove('open');
-            });
-        } else {
-            document.querySelectorAll('.accordion-body').forEach(function (b) {
-                b.classList.add('open');
-                b.previousElementSibling.classList.add('open');
-            });
-        }
-        updateToggleAllLabel();
-    });
-
-    document.querySelectorAll('.accordion-toggle').forEach(function (toggle) {
-        toggle.addEventListener('click', function () {
-            const body = toggle.nextElementSibling;
-            const isOpen = body.classList.contains('open');
-
-                body.classList.toggle('open', !isOpen);
-                toggle.classList.toggle('open', !isOpen);
-            updateToggleAllLabel();
-        });
-    });
-
-    updateToggleAllLabel();
-
-    function fixtureKey(row) {
-        return [row.dataset.date, row.dataset.league, row.dataset.home, row.dataset.away].join('|');
-    }
-
-    function loadFollowingKeys() {
-        try {
-            const raw = localStorage.getItem(FOLLOWING_KEY);
-            if (!raw) return [];
-            const parsed = JSON.parse(raw);
-            return Array.isArray(parsed) ? parsed : [];
-        } catch (e) {
-            return [];
-        }
-    }
-
-    function saveFollowingKeys(keys) {
-        localStorage.setItem(FOLLOWING_KEY, JSON.stringify(keys));
-    }
-
-    function updateFollowingCount() {
-        if (!followingBody || !followingCount || !followingEmpty || !followingCard) return;
-        const count = followingBody.querySelectorAll('.fixture-row').length;
-        followingCount.textContent = String(count);
-        followingEmpty.style.display = count ? 'none' : 'block';
-        followingCard.style.display = count ? '' : 'none';
-        if (!count) {
-            followingBody.classList.remove('open');
-            const toggle = followingBody.previousElementSibling;
-            if (toggle) toggle.classList.remove('open');
-        }
-    }
-
-    function markStarState(row, starred) {
-        const star = row.querySelector('.fixture-star');
-        if (!star) return;
-        star.classList.toggle('is-starred', starred);
-        star.setAttribute('aria-label', starred ? 'Unfollow match' : 'Follow match');
-        star.setAttribute('title', starred ? 'Unfollow match' : 'Follow match');
-    }
-
-    function syncStarsForKey(key, starred) {
-        document.querySelectorAll('.fixture-row').forEach(function (row) {
-            if (fixtureKey(row) === key) {
-                markStarState(row, starred);
-            }
-        });
-    }
-
-    function removeFollowingClone(key) {
-        if (!followingBody) return;
-        followingBody.querySelectorAll('.fixture-row').forEach(function (row) {
-            if (fixtureKey(row) === key) {
-                row.remove();
-            }
-        });
-    }
-
-    function createFollowingClone(sourceRow) {
-        const clone = sourceRow.cloneNode(true);
-        delete clone.dataset.bound;
-        attachFixtureHandlers(clone);
-        return clone;
-    }
-
-    function toggleFollow(row) {
-        const key = fixtureKey(row);
-        const keys = loadFollowingKeys();
-        const index = keys.indexOf(key);
-        const isStarred = index !== -1;
-
-        if (isStarred) {
-            keys.splice(index, 1);
-            saveFollowingKeys(keys);
-            syncStarsForKey(key, false);
-            removeFollowingClone(key);
-        } else {
-            keys.push(key);
-            saveFollowingKeys(keys);
-            syncStarsForKey(key, true);
-            removeFollowingClone(key);
-            if (followingBody) {
-                followingBody.appendChild(createFollowingClone(row));
-            }
-        }
-
-        updateFollowingCount();
-    }
-
-    function loadMatchDetail(row) {
-        const params = new URLSearchParams({
-            league: row.dataset.league,
-            home:   row.dataset.home,
-            away:   row.dataset.away,
-            date:   row.dataset.date,
-        });
-        detailPlaceholder.classList.add('hidden');
-        detailFrame.src = '/match/?' + params.toString();
-
-        document.querySelectorAll('.fixture-row.active').forEach(function (r) {
-            r.classList.remove('active');
-        });
-
-        const key = fixtureKey(row);
-        document.querySelectorAll('.fixture-row').forEach(function (r) {
-            if (fixtureKey(r) === key) {
-                r.classList.add('active');
-            }
-        });
-    }
-
-    function attachFixtureHandlers(row) {
-        if (row.dataset.bound === '1') return;
-        row.dataset.bound = '1';
-
-        row.addEventListener('click', function () {
-            loadMatchDetail(row);
-        });
-
-        const star = row.querySelector('.fixture-star');
-        if (star) {
-            star.addEventListener('click', function (e) {
-                e.preventDefault();
-                e.stopPropagation();
-                toggleFollow(row);
-            });
-
-            star.addEventListener('keydown', function (e) {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    toggleFollow(row);
+        if (dateDropdownBtn && mainCalPopup) {
+            dateDropdownBtn.addEventListener('click', function (event) {
+                event.stopPropagation();
+                if (mainCalPopup.classList.contains('open')) {
+                    closeMainCal();
+                } else {
+                    renderMainCalendar();
+                    openMainCal();
                 }
             });
         }
-    }
 
-    // Initialize fixture handlers and restore followed matches from storage.
-    const allRows = Array.from(document.querySelectorAll('.fixture-row')).filter(function (row) {
-        return row.closest('#followingBody') === null;
-    });
-
-    allRows.forEach(function (row) {
-        attachFixtureHandlers(row);
-    });
-
-    const followed = loadFollowingKeys();
-    followed.forEach(function (key) {
-        const source = allRows.find(function (row) { return fixtureKey(row) === key; });
-        if (!source) return;
-        markStarState(source, true);
-        if (followingBody) {
-            followingBody.appendChild(createFollowingClone(source));
+        if (mainCalPrev) {
+            mainCalPrev.addEventListener('click', function (event) {
+                event.stopPropagation();
+                currentCursor.setMonth(currentCursor.getMonth() - 1);
+                renderMainCalendar();
+            });
         }
-    });
 
-    updateFollowingCount();
+        if (mainCalNext) {
+            mainCalNext.addEventListener('click', function (event) {
+                event.stopPropagation();
+                currentCursor.setMonth(currentCursor.getMonth() + 1);
+                renderMainCalendar();
+            });
+        }
+
+        const eplFixtureList = document.getElementById('eplFixtureList');
+        const laLigaFixtureList = document.getElementById('laLigaFixtureList');
+
+        function toIsoDate(d) {
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return y + '-' + m + '-' + day;
+        }
+
+        function renderLeagueResults(listEl, matches) {
+            if (!listEl) return;
+            if (!matches || matches.length === 0) {
+                listEl.innerHTML = '<li class="mini-fixture-item"><span style="color:var(--muted);font-size:12px;">No results available for this date.</span></li>';
+                return;
+            }
+            listEl.innerHTML = matches.map(function (m) {
+                var mid;
+                if (m.status === 'FT') {
+                    mid = '<span class="mini-mid is-score">' + m.home_score + ' - ' + m.away_score + '</span>';
+                } else {
+                    mid = '<span class="mini-mid">' + (m.kickoff || 'TBD') + '</span>';
+                }
+                return '<li class="mini-fixture-item">'
+                    + '<span class="mini-team home">' + m.home + '</span>'
+                    + mid
+                    + '<span class="mini-team away">' + m.away + '</span>'
+                    + '</li>';
+            }).join('');
+        }
+
+        function fetchLeagueResults(dateObj, listEl, endpoint) {
+            if (!listEl) return;
+            listEl.innerHTML = '<li class="mini-fixture-item"><span style="color:var(--muted);font-size:12px;">Loading results&hellip;</span></li>';
+            fetch(endpoint + '?date=' + toIsoDate(dateObj))
+                .then(function (r) { return r.json(); })
+                .then(function (data) { renderLeagueResults(listEl, data.matches); })
+                .catch(function () {
+                    listEl.innerHTML = '<li class="mini-fixture-item"><span style="color:var(--muted);font-size:12px;">Failed to load results.</span></li>';
+                });
+        }
+
+        function refreshAllLeagueCards(dateObj) {
+            fetchLeagueResults(dateObj, eplFixtureList, '/api/epl-fixtures/');
+            fetchLeagueResults(dateObj, laLigaFixtureList, '/api/laliga-results/');
+        }
+
+        refreshAllLeagueCards(currentDate);
+
+        prevDateBtn.addEventListener('click', function () {
+            currentDate.setDate(currentDate.getDate() - 1);
+            setDateLabel(currentDate);
+            refreshAllLeagueCards(currentDate);
+            currentCursor = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+            if (mainCalPopup && mainCalPopup.classList.contains('open')) {
+                renderMainCalendar();
+            }
+        });
+
+        nextDateBtn.addEventListener('click', function () {
+            currentDate.setDate(currentDate.getDate() + 1);
+            setDateLabel(currentDate);
+            refreshAllLeagueCards(currentDate);
+            currentCursor = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+            if (mainCalPopup && mainCalPopup.classList.contains('open')) {
+                renderMainCalendar();
+            }
+        });
+
+        document.addEventListener('click', function (event) {
+            if (!mainCalPopup || !dateDropdownBtn) return;
+            if (!mainCalPopup.contains(event.target) && !dateDropdownBtn.contains(event.target)) {
+                closeMainCal();
+            }
+        });
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') {
+                closeMainCal();
+            }
+        });
+
+        document.querySelectorAll('.mini-league-toggle').forEach(function (toggle) {
+            toggle.addEventListener('click', function () {
+                const card = toggle.closest('.mini-league-card');
+                if (!card) return;
+                const nextOpen = !card.classList.contains('open');
+                card.classList.toggle('open', nextOpen);
+                toggle.setAttribute('aria-expanded', nextOpen ? 'true' : 'false');
+            });
+        });
+    }
 }());
 </script>
 </body>
 </html>
+
