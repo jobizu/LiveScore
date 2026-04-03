@@ -1,0 +1,21 @@
+Position,Team,TeamId,Played,Wins,Draws,Losses,GoalsFor,GoalsAgainst,GoalDifference,Points,LogoUrl
+1,Inter,8636,30,22,3,5,66,24,42,69,https://images.fotmob.com/image_resources/logo/teamlogo/8636.png
+2,Milan,8564,30,18,9,3,47,23,24,63,https://images.fotmob.com/image_resources/logo/teamlogo/8564.png
+3,Napoli,9875,30,19,5,6,46,30,16,62,https://images.fotmob.com/image_resources/logo/teamlogo/9875.png
+4,Como,10171,30,16,9,5,53,22,31,57,https://images.fotmob.com/image_resources/logo/teamlogo/10171.png
+5,Juventus,9885,30,15,9,6,52,29,23,54,https://images.fotmob.com/image_resources/logo/teamlogo/9885.png
+6,Roma,8686,30,17,3,10,40,23,17,54,https://images.fotmob.com/image_resources/logo/teamlogo/8686.png
+7,Atalanta,8524,30,13,11,6,41,27,14,50,https://images.fotmob.com/image_resources/logo/teamlogo/8524.png
+8,Lazio,8543,30,11,10,9,31,28,3,43,https://images.fotmob.com/image_resources/logo/teamlogo/8543.png
+9,Bologna,9857,30,12,6,12,38,36,2,42,https://images.fotmob.com/image_resources/logo/teamlogo/9857.png
+10,Sassuolo,7943,30,11,6,13,36,40,-4,39,https://images.fotmob.com/image_resources/logo/teamlogo/7943.png
+11,Udinese,8600,30,11,6,13,35,42,-7,39,https://images.fotmob.com/image_resources/logo/teamlogo/8600.png
+12,Parma,10167,30,8,10,12,21,38,-17,34,https://images.fotmob.com/image_resources/logo/teamlogo/10167.png
+13,Genoa,10233,30,8,9,13,36,42,-6,33,https://images.fotmob.com/image_resources/logo/teamlogo/10233.png
+14,Torino,9804,30,9,6,15,34,53,-19,33,https://images.fotmob.com/image_resources/logo/teamlogo/9804.png
+15,Cagliari,8529,30,7,9,14,31,42,-11,30,https://images.fotmob.com/image_resources/logo/teamlogo/8529.png
+16,Fiorentina,8535,30,6,11,13,35,44,-9,29,https://images.fotmob.com/image_resources/logo/teamlogo/8535.png
+17,Cremonese,7801,30,6,9,15,25,44,-19,27,https://images.fotmob.com/image_resources/logo/teamlogo/7801.png
+18,Lecce,9888,30,7,6,17,21,40,-19,27,https://images.fotmob.com/image_resources/logo/teamlogo/9888.png
+19,Hellas Verona,9876,30,3,9,18,22,52,-30,18,https://images.fotmob.com/image_resources/logo/teamlogo/9876.png
+20,Pisa,6479,30,2,12,16,23,54,-31,18,https://images.fotmob.com/image_resources/logo/teamlogo/6479.png

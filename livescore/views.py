@@ -30,11 +30,102 @@ COUNTRY_FLAG_CODES = {
 TEAM_NAME_ALIASES = {
     "spurs": "tottenham",
     "man utd": "man united",
+    "tottenham hotspur": "tottenham",
+    "wolverhampton wanderers": "wolverhampton",
+    "brighton and hove albion": "brighton",
+    "brighton & hove albion": "brighton",
+    "brighton hove albion": "brighton",
+    "west ham united": "west ham",
+    "afc bournemouth": "bournemouth",
+    "athletic club": "athletic bilbao",
+    "mallorca": "real mallorca",
+    # Bundesliga name alignment (Forebet vs FotMob)
+    "bayern munchen": "bayern munich",
+    "borussia monchengladbach": "borussia m'gladbach",
+    "fc heidenheim": "heidenheim",
+    "1. fc koln": "koln",
+    "mainz 05": "mainz",
+    "st. pauli": "st pauli",
+    "vfb stuttgart": "stuttgart",
+    # Serie A name alignment (Forebet vs FotMob)
+    "internazionale": "inter",
+    "parma calcio 1913": "parma",
+    "hellas verona": "verona",
+    "lecce": "us lecce",
+    "cremonese": "us cremonese",
+    "como": "calcio como",
+    "sassuolo": "us sassuolo",
+    "pisa": "ac pisa",
+    "cagliari": "cagliari calcio",
+    # Ligue 1 name alignment (Forebet vs FotMob)
+    "paris saint-germain": "psg",
+    "lyon": "olympique lyonnais",
+    "nice": "ogc nice",
+    "metz": "fc metz",
+    "strasbourg": "strasbourg alsace",
+    "lens": "rc lens",
+    "rennes": "stade rennais",
+    "nantes": "fc nantes",
+    "angers": "angers sco",
+    "lille": "losc",
+    "marseille": "olympique marseille",
+    # Eredivisie name alignment (Forebet vs FotMob)
+    "go ahead eagles": "go ahead eagles",
+    "n.e.c.": "nec nijmegen",
+    "nec": "nec nijmegen",
+    "nec nijmegen": "nijmegen",
+    "sparta rotterdam": "sparta",
+    "fortuna sittard": "fortuna",
+    "feyenoord": "feyenoord rotterdam",
+    "fc groningen": "groningen",
+    "sc heerenveen": "heerenveen",
+    "fc twente": "twente",
+    "fc utrecht": "utrecht",
+    "fc volendam": "volendam",
+    "telstar": "sc telstar",
+    # Liga Portugal name alignment (Forebet vs FotMob)
+    "sporting cp": "sporting",
+    "fc porto": "porto",
+    "vitoria guimaraes": "vitoria",
+    "vitoria de guimaraes": "vitoria",
+    "braga": "sporting braga",
+    "sl benfica": "benfica",
+    "avs futebol sad": "avs",
+    "alverca": "fc alverca",
+    "arouca": "fc arouca",
+    "famalicao": "fc famalicao",
+    "estoril": "gd estoril",
+    "nacional": "nacional madeira",
+    "tondela": "cd tondela",
+    "estrela amadora": "estrela da amadora",
+    "moreirense": "moreirense fc",
+    "boavista": "boavista fc",
+    # Super Lig name alignment (Forebet vs FotMob)
+    "gaziantep fk": "gaziantep",
+    "goztepe": "goztepe izmir",
+    "kasımpasa": "kasımpasa sk",
+    "kasimpasa": "kasımpasa sk",
+        # Saudi Pro League name alignment (Forebet vs FotMob)
+        "al akhdood": "al akhdoud",
+        "al fateh (ksa)": "al fateh fc",
+        "al feiha": "al-fayha",
+        "al hazm": "al hazem",
+        "al khaleej club": "al khaleej",
+        "al kholood club": "al kholood",
+        "al najma (ksa)": "al najma",
+        "al nassr": "al nassr fc",
+        "al riyadh sc": "al riyadh",
+        "damak": "damac fc",
+        "ettifaq fc": "al-ettifaq",
+        "ittihad jeddah": "al ittihad",
+        "qadisiya khubar": "al qadsiah",
+        "shabab riyadh": "al shabab",
+        "taawoun": "al-taawoun",
     # Turkish team names - keys are already diacritic-stripped (post-NFD)
     "genclerbirligi": "genclerbirligi",
     "fenerbahce": "fenerbahce",
-    "goztepe": "goztepe",
-    "goztep": "goztepe",
+    "goztepe": "goztepe izmir",
+    "goztep": "goztepe izmir",
     "caykur rizespor": "rizespor",
     "eyupspor": "eyupspor",
     "fatih karagumruk": "karagumruk",
@@ -486,6 +577,162 @@ def _read_forebet_results_for_date(csv_path, target_date):
     return matches, ""
 
 
+def _read_livescore_fixtures_for_date(csv_path, target_date):
+    if not csv_path.exists():
+        return None, f"Fixtures file not found: {csv_path.name}."
+
+    matches = []
+    seen_ids = set()
+    finished_markers = {"FT", "AET", "PEN", "AP", "FULL TIME", "ENDED"}
+    not_finished_markers = {"NS", "POSTP.", "PST", "CANC.", "ABN.", "TBD"}
+
+    try:
+        with csv_path.open("r", encoding="utf-8-sig", errors="replace", newline="") as f:
+            for row in csv.DictReader(f):
+                if (row.get("Date") or "").strip() != target_date:
+                    continue
+
+                fixture_id = (row.get("EventId") or "").strip()
+                if fixture_id and fixture_id in seen_ids:
+                    continue
+                if fixture_id:
+                    seen_ids.add(fixture_id)
+
+                home = _display_team_name((row.get("Home") or "").strip())
+                away = _display_team_name((row.get("Away") or "").strip())
+                if not home or not away:
+                    continue
+
+                status = (row.get("Status") or "").strip() or "NS"
+                kickoff = (row.get("Time") or "").strip()
+                home_score = (row.get("HomeScore") or "").strip()
+                away_score = (row.get("AwayScore") or "").strip()
+
+                status_upper = status.upper()
+                has_scores = home_score != "" and away_score != ""
+                is_finished = status_upper in finished_markers or (
+                    has_scores and status_upper not in not_finished_markers
+                )
+
+                if is_finished:
+                    status = "FT"
+                    kickoff = ""
+                elif not kickoff:
+                    kickoff = "TBD"
+
+                matches.append(
+                    {
+                        "home": home,
+                        "away": away,
+                        "status": status,
+                        "home_score": home_score if home_score else "-",
+                        "away_score": away_score if away_score else "-",
+                        "kickoff": kickoff,
+                    }
+                )
+    except OSError as exc:
+        return None, f"Could not read fixtures CSV: {exc}"
+
+    return matches, ""
+
+
+def _fetch_livescore_epl_events(timeout=20):
+    endpoint = "https://prod-cdn-public-api.lsmedia1.com/v1/api/app/competition/65/fixtures-w/0?locale=en&countryCode=GB&limit=200"
+    try:
+        response = requests.get(
+            endpoint,
+            timeout=timeout,
+            headers={"User-Agent": "Mozilla/5.0 (compatible; LiveScoreEPLFixtures/1.0)"},
+        )
+        response.raise_for_status()
+        payload = response.json()
+    except requests.RequestException as exc:
+        return None, f"Could not fetch LiveScore EPL fixtures: {exc}"
+    except ValueError as exc:
+        return None, f"Could not parse LiveScore EPL fixtures response: {exc}"
+
+    stages = payload.get("Stages") or []
+    if not stages:
+        return [], ""
+
+    events = stages[0].get("Events") or []
+    return events, ""
+
+
+def _map_livescore_events_for_date(events, selected_date):
+    selected_key = selected_date.strftime("%Y%m%d")
+    window_end = selected_date + timedelta(days=62)
+    parsed_events = []
+
+    for event in events:
+        start_raw = str(event.get("Esd") or "").strip()
+        if len(start_raw) < 12:
+            continue
+
+        try:
+            event_dt = datetime.strptime(start_raw[:12], "%Y%m%d%H%M")
+        except ValueError:
+            continue
+
+        home = ((event.get("T1") or [{}])[0].get("Nm") or "").strip()
+        away = ((event.get("T2") or [{}])[0].get("Nm") or "").strip()
+        if not home or not away:
+            continue
+
+        status_text = (event.get("Eps") or "").strip()
+        if status_text in {"", "NS"}:
+            status = "NS"
+            kickoff = event_dt.strftime("%H:%M")
+        elif status_text == "FT":
+            status = "FT"
+            kickoff = ""
+        else:
+            status = "NS"
+            kickoff = status_text
+
+        parsed_events.append(
+            {
+            "event_dt": event_dt,
+                "event_date": event_dt.date(),
+                "home": _display_team_name(home),
+                "away": _display_team_name(away),
+                "status": status,
+                "home_score": "-",
+                "away_score": "-",
+                "kickoff": kickoff,
+            }
+        )
+
+    exact_day = [m for m in parsed_events if m["event_date"].strftime("%Y%m%d") == selected_key]
+    if exact_day:
+        exact_day.sort(key=lambda m: m["event_dt"])
+        return [{k: v for k, v in m.items() if k not in {"event_date", "event_dt"}} for m in exact_day]
+
+    upcoming = [m for m in parsed_events if selected_date <= m["event_date"] <= window_end]
+    upcoming.sort(key=lambda m: m["event_dt"])
+    return [{k: v for k, v in m.items() if k not in {"event_date", "event_dt"}} for m in upcoming]
+
+
+def _load_league_logo_map(csv_filename):
+    csv_path = Path(settings.BASE_DIR) / "data" / csv_filename
+    if not csv_path.exists():
+        return {}
+
+    logo_map = {}
+    try:
+        with csv_path.open("r", encoding="utf-8-sig", errors="replace", newline="") as f:
+            for row in csv.DictReader(f):
+                team_name = (row.get("Team") or "").strip()
+                logo_url = (row.get("LogoUrl") or "").strip()
+                if not team_name or not logo_url:
+                    continue
+                logo_map[_normalize_team_name(team_name)] = logo_url
+    except OSError:
+        return {}
+
+    return logo_map
+
+
 def _load_europe_csv_rows():
     csv_path = Path(settings.BASE_DIR) / "data" / "europe_top10_2025_2026.csv"
     if not csv_path.exists():
@@ -659,17 +906,47 @@ def _build_league_table(rows, league_name, cutoff_date):
 
 
 def epl_fixtures_api(request):
-    """Return Premier League results from the Forebet EPL results CSV for a given date."""
+    """Return Premier League fixtures from the LiveScore EPL fixtures CSV for a given date."""
     selected_date, has_explicit_date = _selected_date_from_request(request)
 
     if request.GET.get("date") and not has_explicit_date:
         return JsonResponse({"error": "Invalid date format. Use ?date=YYYY-MM-DD."}, status=400)
 
     target_date = selected_date.strftime("%d/%m/%Y")
-    csv_path = Path(settings.BASE_DIR) / "data" / "epl_forebet_results_2025_2026.csv"
+    csv_path = Path(settings.BASE_DIR) / "data" / "epl_livescore_fixtures_2025_2026.csv"
+    matches, error = _read_livescore_fixtures_for_date(csv_path, target_date)
+    if matches is None:
+        return JsonResponse({"error": f"Could not read LiveScore EPL fixtures: {error}"}, status=500)
+
+    logo_map = _load_league_logo_map("epl_fotmob_table_2025_2026.csv")
+    for match in matches:
+        home_key = _normalize_team_name(match.get("home") or "")
+        away_key = _normalize_team_name(match.get("away") or "")
+        match["home_logo"] = logo_map.get(home_key, "")
+        match["away_logo"] = logo_map.get(away_key, "")
+
+    return JsonResponse({"date": selected_date.isoformat(), "matches": matches})
+
+
+def saudi_results_api(request):
+    """Return Saudi Pro League results from the Forebet Saudi results CSV for a given date."""
+    selected_date, has_explicit_date = _selected_date_from_request(request)
+
+    if request.GET.get("date") and not has_explicit_date:
+        return JsonResponse({"error": "Invalid date format. Use ?date=YYYY-MM-DD."}, status=400)
+
+    target_date = selected_date.strftime("%d/%m/%Y")
+    csv_path = Path(settings.BASE_DIR) / "data" / "saudi_forebet_results_2025_2026.csv"
     matches, error = _read_forebet_results_for_date(csv_path, target_date)
     if matches is None:
-        return JsonResponse({"error": f"Could not read Forebet EPL results: {error}"}, status=500)
+        return JsonResponse({"error": f"Could not read Forebet Saudi Pro League results: {error}"}, status=500)
+
+    logo_map = _load_league_logo_map("saudi_fotmob_table_2025_2026.csv")
+    for match in matches:
+        home_key = _normalize_team_name(match.get("home") or "")
+        away_key = _normalize_team_name(match.get("away") or "")
+        match["home_logo"] = logo_map.get(home_key, "")
+        match["away_logo"] = logo_map.get(away_key, "")
 
     return JsonResponse({"date": selected_date.isoformat(), "matches": matches})
 
@@ -686,6 +963,151 @@ def laliga_results_api(request):
     matches, error = _read_forebet_results_for_date(csv_path, target_date)
     if matches is None:
         return JsonResponse({"error": f"Could not read Forebet La Liga results: {error}"}, status=500)
+
+    logo_map = _load_league_logo_map("laliga_fotmob_table_2025_2026.csv")
+    for match in matches:
+        home_key = _normalize_team_name(match.get("home") or "")
+        away_key = _normalize_team_name(match.get("away") or "")
+        match["home_logo"] = logo_map.get(home_key, "")
+        match["away_logo"] = logo_map.get(away_key, "")
+
+    return JsonResponse({"date": selected_date.isoformat(), "matches": matches})
+
+
+def bundesliga_results_api(request):
+    """Return Bundesliga results from the Forebet Bundesliga results CSV for a given date."""
+    selected_date, has_explicit_date = _selected_date_from_request(request)
+
+    if request.GET.get("date") and not has_explicit_date:
+        return JsonResponse({"error": "Invalid date format. Use ?date=YYYY-MM-DD."}, status=400)
+
+    target_date = selected_date.strftime("%d/%m/%Y")
+    csv_path = Path(settings.BASE_DIR) / "data" / "bundesliga_forebet_results_2025_2026.csv"
+    matches, error = _read_forebet_results_for_date(csv_path, target_date)
+    if matches is None:
+        return JsonResponse({"error": f"Could not read Forebet Bundesliga results: {error}"}, status=500)
+
+    logo_map = _load_league_logo_map("bundesliga_fotmob_table_2025_2026.csv")
+    for match in matches:
+        home_key = _normalize_team_name(match.get("home") or "")
+        away_key = _normalize_team_name(match.get("away") or "")
+        match["home_logo"] = logo_map.get(home_key, "")
+        match["away_logo"] = logo_map.get(away_key, "")
+
+    return JsonResponse({"date": selected_date.isoformat(), "matches": matches})
+
+
+def seriea_results_api(request):
+    """Return Serie A results from the Forebet Serie A results CSV for a given date."""
+    selected_date, has_explicit_date = _selected_date_from_request(request)
+
+    if request.GET.get("date") and not has_explicit_date:
+        return JsonResponse({"error": "Invalid date format. Use ?date=YYYY-MM-DD."}, status=400)
+
+    target_date = selected_date.strftime("%d/%m/%Y")
+    csv_path = Path(settings.BASE_DIR) / "data" / "seriea_forebet_results_2025_2026.csv"
+    matches, error = _read_forebet_results_for_date(csv_path, target_date)
+    if matches is None:
+        return JsonResponse({"error": f"Could not read Forebet Serie A results: {error}"}, status=500)
+
+    logo_map = _load_league_logo_map("seriea_fotmob_table_2025_2026.csv")
+    for match in matches:
+        home_key = _normalize_team_name(match.get("home") or "")
+        away_key = _normalize_team_name(match.get("away") or "")
+        match["home_logo"] = logo_map.get(home_key, "")
+        match["away_logo"] = logo_map.get(away_key, "")
+
+    return JsonResponse({"date": selected_date.isoformat(), "matches": matches})
+
+
+def ligue1_results_api(request):
+    """Return Ligue 1 results from the Forebet Ligue 1 results CSV for a given date."""
+    selected_date, has_explicit_date = _selected_date_from_request(request)
+
+    if request.GET.get("date") and not has_explicit_date:
+        return JsonResponse({"error": "Invalid date format. Use ?date=YYYY-MM-DD."}, status=400)
+
+    target_date = selected_date.strftime("%d/%m/%Y")
+    csv_path = Path(settings.BASE_DIR) / "data" / "ligue1_forebet_results_2025_2026.csv"
+    matches, error = _read_forebet_results_for_date(csv_path, target_date)
+    if matches is None:
+        return JsonResponse({"error": f"Could not read Forebet Ligue 1 results: {error}"}, status=500)
+
+    logo_map = _load_league_logo_map("ligue1_fotmob_table_2025_2026.csv")
+    for match in matches:
+        home_key = _normalize_team_name(match.get("home") or "")
+        away_key = _normalize_team_name(match.get("away") or "")
+        match["home_logo"] = logo_map.get(home_key, "")
+        match["away_logo"] = logo_map.get(away_key, "")
+
+    return JsonResponse({"date": selected_date.isoformat(), "matches": matches})
+
+
+def eredivisie_results_api(request):
+    """Return Eredivisie results from the Forebet Eredivisie results CSV for a given date."""
+    selected_date, has_explicit_date = _selected_date_from_request(request)
+
+    if request.GET.get("date") and not has_explicit_date:
+        return JsonResponse({"error": "Invalid date format. Use ?date=YYYY-MM-DD."}, status=400)
+
+    target_date = selected_date.strftime("%d/%m/%Y")
+    csv_path = Path(settings.BASE_DIR) / "data" / "eredivisie_forebet_results_2025_2026.csv"
+    matches, error = _read_forebet_results_for_date(csv_path, target_date)
+    if matches is None:
+        return JsonResponse({"error": f"Could not read Forebet Eredivisie results: {error}"}, status=500)
+
+    logo_map = _load_league_logo_map("eredivisie_fotmob_table_2025_2026.csv")
+    for match in matches:
+        home_key = _normalize_team_name(match.get("home") or "")
+        away_key = _normalize_team_name(match.get("away") or "")
+        match["home_logo"] = logo_map.get(home_key, "")
+        match["away_logo"] = logo_map.get(away_key, "")
+
+    return JsonResponse({"date": selected_date.isoformat(), "matches": matches})
+
+
+def ligaportugal_results_api(request):
+    """Return Liga Portugal results from the Forebet Liga Portugal results CSV for a given date."""
+    selected_date, has_explicit_date = _selected_date_from_request(request)
+
+    if request.GET.get("date") and not has_explicit_date:
+        return JsonResponse({"error": "Invalid date format. Use ?date=YYYY-MM-DD."}, status=400)
+
+    target_date = selected_date.strftime("%d/%m/%Y")
+    csv_path = Path(settings.BASE_DIR) / "data" / "ligaportugal_forebet_results_2025_2026.csv"
+    matches, error = _read_forebet_results_for_date(csv_path, target_date)
+    if matches is None:
+        return JsonResponse({"error": f"Could not read Forebet Liga Portugal results: {error}"}, status=500)
+
+    logo_map = _load_league_logo_map("ligaportugal_fotmob_table_2025_2026.csv")
+    for match in matches:
+        home_key = _normalize_team_name(match.get("home") or "")
+        away_key = _normalize_team_name(match.get("away") or "")
+        match["home_logo"] = logo_map.get(home_key, "")
+        match["away_logo"] = logo_map.get(away_key, "")
+
+    return JsonResponse({"date": selected_date.isoformat(), "matches": matches})
+
+
+def superlig_results_api(request):
+    """Return Turkiye Super Lig results from the Forebet Super Lig results CSV for a given date."""
+    selected_date, has_explicit_date = _selected_date_from_request(request)
+
+    if request.GET.get("date") and not has_explicit_date:
+        return JsonResponse({"error": "Invalid date format. Use ?date=YYYY-MM-DD."}, status=400)
+
+    target_date = selected_date.strftime("%d/%m/%Y")
+    csv_path = Path(settings.BASE_DIR) / "data" / "superlig_forebet_results_2025_2026.csv"
+    matches, error = _read_forebet_results_for_date(csv_path, target_date)
+    if matches is None:
+        return JsonResponse({"error": f"Could not read Forebet Super Lig results: {error}"}, status=500)
+
+    logo_map = _load_league_logo_map("superlig_fotmob_table_2025_2026.csv")
+    for match in matches:
+        home_key = _normalize_team_name(match.get("home") or "")
+        away_key = _normalize_team_name(match.get("away") or "")
+        match["home_logo"] = logo_map.get(home_key, "")
+        match["away_logo"] = logo_map.get(away_key, "")
 
     return JsonResponse({"date": selected_date.isoformat(), "matches": matches})
 

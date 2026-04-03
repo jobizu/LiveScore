@@ -1,0 +1,19 @@
+Position,Team,TeamId,Played,Wins,Draws,Losses,GoalsFor,GoalsAgainst,GoalDifference,Points,LogoUrl
+1,Bayern München,9823,27,22,4,1,97,25,72,70,https://images.fotmob.com/image_resources/logo/teamlogo/9823.png
+2,Borussia Dortmund,9789,27,18,7,2,58,28,30,61,https://images.fotmob.com/image_resources/logo/teamlogo/9789.png
+3,VfB Stuttgart,10269,27,16,5,6,56,36,20,53,https://images.fotmob.com/image_resources/logo/teamlogo/10269.png
+4,RB Leipzig,178475,27,15,5,7,53,35,18,50,https://images.fotmob.com/image_resources/logo/teamlogo/178475.png
+5,Hoffenheim,8226,27,15,5,7,54,39,15,50,https://images.fotmob.com/image_resources/logo/teamlogo/8226.png
+6,Bayer Leverkusen,8178,27,13,7,7,52,36,16,46,https://images.fotmob.com/image_resources/logo/teamlogo/8178.png
+7,Eintracht Frankfurt,9810,27,10,8,9,50,51,-1,38,https://images.fotmob.com/image_resources/logo/teamlogo/9810.png
+8,Freiburg,8358,27,10,7,10,39,44,-5,37,https://images.fotmob.com/image_resources/logo/teamlogo/8358.png
+9,Union Berlin,8149,27,8,7,12,31,46,-15,31,https://images.fotmob.com/image_resources/logo/teamlogo/8149.png
+10,Augsburg,8406,27,9,4,14,33,50,-17,31,https://images.fotmob.com/image_resources/logo/teamlogo/8406.png
+11,Mainz 05,9905,27,7,9,11,33,42,-9,30,https://images.fotmob.com/image_resources/logo/teamlogo/9905.png
+12,Hamburger SV,9790,27,7,9,11,31,40,-9,30,https://images.fotmob.com/image_resources/logo/teamlogo/9790.png
+13,Borussia Mönchengladbach,9788,27,7,8,12,33,46,-13,29,https://images.fotmob.com/image_resources/logo/teamlogo/9788.png
+14,Werder Bremen,8697,27,7,7,13,30,47,-17,28,https://images.fotmob.com/image_resources/logo/teamlogo/8697.png
+15,1. FC Köln,8722,27,6,8,13,38,47,-9,26,https://images.fotmob.com/image_resources/logo/teamlogo/8722.png
+16,St. Pauli,8152,27,6,6,15,24,44,-20,24,https://images.fotmob.com/image_resources/logo/teamlogo/8152.png
+17,Wolfsburg,8721,27,5,6,16,35,57,-22,21,https://images.fotmob.com/image_resources/logo/teamlogo/8721.png
+18,FC Heidenheim,94937,27,3,6,18,27,61,-34,15,https://images.fotmob.com/image_resources/logo/teamlogo/94937.png

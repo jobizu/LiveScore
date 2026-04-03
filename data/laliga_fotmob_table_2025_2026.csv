@@ -1,0 +1,21 @@
+Position,Team,TeamId,Played,Wins,Draws,Losses,GoalsFor,GoalsAgainst,GoalDifference,Points,LogoUrl
+1,Barcelona,8634,29,24,1,4,78,28,50,73,https://images.fotmob.com/image_resources/logo/teamlogo/8634.png
+2,Real Madrid,8633,29,22,3,4,63,26,37,69,https://images.fotmob.com/image_resources/logo/teamlogo/8633.png
+3,Villarreal,10205,29,18,4,7,54,34,20,58,https://images.fotmob.com/image_resources/logo/teamlogo/10205.png
+4,Atletico Madrid,9906,29,17,6,6,49,28,21,57,https://images.fotmob.com/image_resources/logo/teamlogo/9906.png
+5,Real Betis,8603,29,11,11,7,44,37,7,44,https://images.fotmob.com/image_resources/logo/teamlogo/8603.png
+6,Celta Vigo,9910,29,10,11,8,41,35,6,41,https://images.fotmob.com/image_resources/logo/teamlogo/9910.png
+7,Real Sociedad,8560,29,10,8,11,44,45,-1,38,https://images.fotmob.com/image_resources/logo/teamlogo/8560.png
+8,Getafe,8305,29,11,5,13,25,31,-6,38,https://images.fotmob.com/image_resources/logo/teamlogo/8305.png
+9,Athletic Club,8315,29,11,5,13,32,41,-9,38,https://images.fotmob.com/image_resources/logo/teamlogo/8315.png
+10,Osasuna,8371,29,10,7,12,34,35,-1,37,https://images.fotmob.com/image_resources/logo/teamlogo/8371.png
+11,Espanyol,8558,29,10,7,12,36,44,-8,37,https://images.fotmob.com/image_resources/logo/teamlogo/8558.png
+12,Valencia,10267,29,9,8,12,32,42,-10,35,https://images.fotmob.com/image_resources/logo/teamlogo/10267.png
+13,Girona,7732,29,8,10,11,31,44,-13,34,https://images.fotmob.com/image_resources/logo/teamlogo/7732.png
+14,Rayo Vallecano,8370,29,7,11,11,28,35,-7,32,https://images.fotmob.com/image_resources/logo/teamlogo/8370.png
+15,Sevilla,8302,29,8,7,14,37,49,-12,31,https://images.fotmob.com/image_resources/logo/teamlogo/8302.png
+16,Deportivo Alaves,9866,29,8,7,14,30,41,-11,31,https://images.fotmob.com/image_resources/logo/teamlogo/9866.png
+17,Elche,10268,29,6,11,12,38,46,-8,29,https://images.fotmob.com/image_resources/logo/teamlogo/10268.png
+18,Mallorca,8661,29,7,7,15,34,47,-13,28,https://images.fotmob.com/image_resources/logo/teamlogo/8661.png
+19,Levante,8581,29,6,8,15,34,48,-14,26,https://images.fotmob.com/image_resources/logo/teamlogo/8581.png
+20,Real Oviedo,8670,29,4,9,16,20,48,-28,21,https://images.fotmob.com/image_resources/logo/teamlogo/8670.png

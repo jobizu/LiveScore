@@ -42,10 +42,11 @@
             border: 1px solid var(--line);
             border-radius: 12px;
             background: #000;
-            overflow: hidden;
-            position: sticky;
-            top: 76px;
-            height: calc(100vh - 96px);
+            overflow: visible;
+            position: relative;
+            top: auto;
+            min-height: calc(100vh - 96px);
+            height: auto;
             display: flex;
             flex-direction: column;
             z-index: 1;
@@ -215,6 +216,10 @@
             gap: 0;
         }
 
+        #saudiCard {
+            margin-top: 12px;
+        }
+
         .mini-league-head {
             display: grid;
             gap: 2px;
@@ -289,7 +294,7 @@
 
         .mini-fixture-item {
             display: grid;
-            grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+            grid-template-columns: auto minmax(0, 1fr) auto minmax(0, 1fr);
             align-items: center;
             justify-items: center;
             gap: 8px;
@@ -304,6 +309,23 @@
             border-bottom: none;
         }
 
+        .mini-status-ft {
+            color: #fff;
+            font-size: 7px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.2px;
+            background: rgb(74 74 74);
+            border-radius: 4px;
+            padding: 1px 4px;
+            justify-self: start;
+        }
+
+        .mini-status-spacer {
+            width: 14px;
+            justify-self: start;
+        }
+
         .mini-team {
             color: var(--text);
             font-size: 12px;
@@ -314,8 +336,45 @@
             text-overflow: ellipsis;
         }
 
+        .mini-team.home {
+            justify-self: end;
+            text-align: right;
+        }
+
+        .mini-team.with-logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            max-width: 100%;
+        }
+
+        .mini-team.with-logo.logo-after {
+            justify-content: flex-end;
+            width: 100%;
+        }
+
+        .mini-team.with-logo.logo-before {
+            justify-content: flex-start;
+            width: 100%;
+        }
+
+        .mini-team-label {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+
+        .mini-team-logo {
+            width: 14px;
+            height: 14px;
+            object-fit: contain;
+            flex-shrink: 0;
+        }
+
         .mini-team.away {
-            text-align: center;
+            justify-self: start;
+            text-align: left;
         }
 
         .mini-mid {
@@ -1628,15 +1687,20 @@
             .icon-btn { padding: 3px; }
             .main-content { padding: 10px; }
             .date-nav-card { padding: 9px 10px; border-radius: 10px; }
-            .date-nav-label { font-size: 0.82rem; }
+            .date-nav-label { font-size: 12px; }
             .main-cal-popup { top: 58px; }
             .mini-league-card { padding: 0; }
             .mini-league-toggle { padding: 10px; }
             .mini-league-title { font-size: 12px; }
 
             .mini-mid { font-size: 0.7rem; }
+            .mini-team { font-size: 10px; }
             .footer-links { grid-template-columns: 1fr; }
             .footer-bottom { align-items: flex-start; }
+        }
+
+        @media (max-width: 360px) {
+            .mini-team { font-size: 9px; }
         }
     </style>
 </head>
@@ -1734,11 +1798,7 @@
                         </span>
                     </button>
                     <div class="mini-league-body">
-                        <ul class="mini-fixture-list" id="eplFixtureList">
-                            <li class="mini-fixture-item mini-fixture-loading">
-                                <span style="color:var(--muted);font-size:12px;">Loading results&hellip;</span>
-                            </li>
-                        </ul>
+                        <ul class="mini-fixture-list" id="eplFixtureList"></ul>
                     </div>
                 </article>
 
@@ -1754,11 +1814,119 @@
                         </span>
                     </button>
                     <div class="mini-league-body">
-                        <ul class="mini-fixture-list" id="laLigaFixtureList">
-                            <li class="mini-fixture-item mini-fixture-loading">
-                                <span style="color:var(--muted);font-size:12px;">Loading results&hellip;</span>
-                            </li>
-                        </ul>
+                        <ul class="mini-fixture-list" id="laLigaFixtureList"></ul>
+                    </div>
+                </article>
+
+                <article class="mini-league-card open" id="bundesligaCard" aria-label="Bundesliga results">
+                    <button class="mini-league-toggle" type="button" aria-expanded="true" aria-label="Toggle Bundesliga results">
+                        <span class="mini-league-meta">
+                            <span class="mini-league-title">Bundesliga</span>
+                        </span>
+                        <span class="mini-league-chevron" aria-hidden="true">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"/>
+                            </svg>
+                        </span>
+                    </button>
+                    <div class="mini-league-body">
+                        <ul class="mini-fixture-list" id="bundesligaFixtureList"></ul>
+                    </div>
+                </article>
+
+                <article class="mini-league-card open" id="serieACard" aria-label="Serie A results">
+                    <button class="mini-league-toggle" type="button" aria-expanded="true" aria-label="Toggle Serie A results">
+                        <span class="mini-league-meta">
+                            <span class="mini-league-title">Serie A</span>
+                        </span>
+                        <span class="mini-league-chevron" aria-hidden="true">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"/>
+                            </svg>
+                        </span>
+                    </button>
+                    <div class="mini-league-body">
+                        <ul class="mini-fixture-list" id="serieAFixtureList"></ul>
+                    </div>
+                </article>
+
+                <article class="mini-league-card open" id="ligue1Card" aria-label="Ligue 1 results">
+                    <button class="mini-league-toggle" type="button" aria-expanded="true" aria-label="Toggle Ligue 1 results">
+                        <span class="mini-league-meta">
+                            <span class="mini-league-title">Ligue 1</span>
+                        </span>
+                        <span class="mini-league-chevron" aria-hidden="true">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"/>
+                            </svg>
+                        </span>
+                    </button>
+                    <div class="mini-league-body">
+                        <ul class="mini-fixture-list" id="ligue1FixtureList"></ul>
+                    </div>
+                </article>
+
+                <article class="mini-league-card open" id="eredivisieCard" aria-label="Eredivisie results">
+                    <button class="mini-league-toggle" type="button" aria-expanded="true" aria-label="Toggle Eredivisie results">
+                        <span class="mini-league-meta">
+                            <span class="mini-league-title">Eredivisie</span>
+                        </span>
+                        <span class="mini-league-chevron" aria-hidden="true">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"/>
+                            </svg>
+                        </span>
+                    </button>
+                    <div class="mini-league-body">
+                        <ul class="mini-fixture-list" id="eredivisieFixtureList"></ul>
+                    </div>
+                </article>
+
+                <article class="mini-league-card open" id="ligaPortugalCard" aria-label="Liga Portugal results">
+                    <button class="mini-league-toggle" type="button" aria-expanded="true" aria-label="Toggle Liga Portugal results">
+                        <span class="mini-league-meta">
+                            <span class="mini-league-title">Liga Portugal</span>
+                        </span>
+                        <span class="mini-league-chevron" aria-hidden="true">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"/>
+                            </svg>
+                        </span>
+                    </button>
+                    <div class="mini-league-body">
+                        <ul class="mini-fixture-list" id="ligaPortugalFixtureList"></ul>
+                    </div>
+                </article>
+
+                <article class="mini-league-card open" id="superLigCard" aria-label="Turkiye Super Lig results">
+                    <button class="mini-league-toggle" type="button" aria-expanded="true" aria-label="Toggle Turkiye Super Lig results">
+                        <span class="mini-league-meta">
+                            <span class="mini-league-title">Turkiye Super Lig</span>
+                        </span>
+                        <span class="mini-league-chevron" aria-hidden="true">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"/>
+                            </svg>
+                        </span>
+                    </button>
+                    <div class="mini-league-body">
+                        <ul class="mini-fixture-list" id="superLigFixtureList"></ul>
+                    </div>
+                </article>
+
+                <article class="mini-league-card open" id="saudiCard" aria-label="Saudi Pro League results">
+                    <button class="mini-league-toggle" type="button" aria-expanded="true" aria-label="Toggle Saudi Pro League results">
+                        <span class="mini-league-meta">
+                            <span class="mini-league-title">Saudi Pro League</span>
+                        </span>
+                        <span class="mini-league-chevron" aria-hidden="true">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"/>
+                            </svg>
+                        </span>
+                    </button>
+                    <div class="mini-league-body">
+                        <ul class="mini-fixture-list" id="saudiFixtureList"></ul>
                     </div>
                 </article>
             </div>
@@ -1820,6 +1988,8 @@
     const mainCalMonthLabel = document.getElementById('mainCalMonthLabel');
     const mainCalGrid = document.getElementById('mainCalGrid');
     const STORAGE_KEY = 'dimba:theme';
+    const DATE_STORAGE_KEY = 'dimba:selected-date';
+    const LEGACY_DATE_STORAGE_KEY = 'dimba:selectedDate';
     const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     const DAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 
@@ -1915,7 +2085,12 @@
     });
 
     if (mainDateLabel && prevDateBtn && nextDateBtn) {
-        let currentDate = parseIsoDate(mainDateLabel.dataset.selectedDate || '');
+        let currentDate = parseIsoDate(
+            localStorage.getItem(DATE_STORAGE_KEY)
+            || localStorage.getItem(LEGACY_DATE_STORAGE_KEY)
+            || mainDateLabel.dataset.selectedDate
+            || ''
+        );
         let currentCursor = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
         setDateLabel(currentDate);
 
@@ -1968,6 +2143,7 @@
                 btn.addEventListener('click', function () {
                     currentDate = date;
                     setDateLabel(currentDate);
+                    persistSelectedDate(currentDate);
                     refreshAllLeagueCards(currentDate);
                     renderMainCalendar();
                     closeMainCal();
@@ -2006,6 +2182,13 @@
 
         const eplFixtureList = document.getElementById('eplFixtureList');
         const laLigaFixtureList = document.getElementById('laLigaFixtureList');
+        const bundesligaFixtureList = document.getElementById('bundesligaFixtureList');
+        const serieAFixtureList = document.getElementById('serieAFixtureList');
+        const ligue1FixtureList = document.getElementById('ligue1FixtureList');
+        const eredivisieFixtureList = document.getElementById('eredivisieFixtureList');
+        const ligaPortugalFixtureList = document.getElementById('ligaPortugalFixtureList');
+        const superLigFixtureList = document.getElementById('superLigFixtureList');
+    const saudiFixtureList = document.getElementById('saudiFixtureList');
 
         function toIsoDate(d) {
             const y = d.getFullYear();
@@ -2014,48 +2197,152 @@
             return y + '-' + m + '-' + day;
         }
 
+        function persistSelectedDate(d) {
+            const iso = toIsoDate(d);
+            localStorage.setItem(DATE_STORAGE_KEY, iso);
+            localStorage.setItem(LEGACY_DATE_STORAGE_KEY, iso);
+            if (mainDateLabel) {
+                mainDateLabel.dataset.selectedDate = iso;
+            }
+        }
+
+        function setLeagueCardVisible(listEl, isVisible) {
+            if (!listEl) return;
+            var card = listEl.closest('.mini-league-card');
+            if (!card) return;
+            card.style.display = isVisible ? '' : 'none';
+        }
+
+        function getMobileTeamName(name, isCompactMobile, isTabletDevice) {
+            var raw = (name || '').trim();
+            var key = raw.toLowerCase();
+
+            if (!isTabletDevice && isCompactMobile && (key === 'atletico madrid' || key === 'atlético madrid')) {
+                return 'Atletico<br>Madrid';
+            }
+
+            var replacements = {
+                'manchester united': 'Man United',
+                'newcastle united': 'Newcastle',
+                'manchester city': 'Man City',
+                'tottenham hotspur': 'Spurs',
+                'tottenham hotspurs': 'Spurs',
+                'tottenham': 'Spurs',
+                'nottingham forest': 'Nottm Forest',
+                'atletico madrid': 'A. Madrid',
+                'atlético madrid': 'A. Madrid',
+                'real madrid': 'R. Madrid',
+                'real sociedad': 'R. Sociedad',
+                'real betis': 'R. Betis',
+                'real mallorca': 'R. Mallorca',
+                'athletic bilbao': 'A. Bilbao',
+                'atletico bilbao': 'A. Bilbao',
+                'wolverhampton': 'Wolves',
+                'wolverhampton wanderers': 'Wolves'
+            };
+
+            if (!isCompactMobile) {
+                var keepFullName = {
+                    'real madrid': true,
+                    'real betis': true,
+                    'real mallorca': true,
+                    'real sociedad': true
+                };
+                if (keepFullName[key]) { return raw; }
+            }
+
+            if (replacements[key]) {
+                return replacements[key];
+            }
+
+            return raw;
+        }
+
         function renderLeagueResults(listEl, matches) {
             if (!listEl) return;
             if (!matches || matches.length === 0) {
-                listEl.innerHTML = '<li class="mini-fixture-item"><span style="color:var(--muted);font-size:12px;">No results available for this date.</span></li>';
+                listEl.innerHTML = '';
+                setLeagueCardVisible(listEl, false);
                 return;
             }
+            setLeagueCardVisible(listEl, true);
+            var isEplList = listEl.id === 'eplFixtureList';
+            var isMobile = window.matchMedia('(max-width: 560px)').matches;
+            var isCompactMobile = window.matchMedia('(max-width: 360px)').matches;
+            var isTabletDevice = /iPad|Tablet|Nexus 7|Nexus 10|SM-T|Kindle|Silk|PlayBook/i.test(navigator.userAgent || '');
+            var abbreviateNames = isEplList && isMobile;
             listEl.innerHTML = matches.map(function (m) {
                 var mid;
+                var statusMarkup;
                 if (m.status === 'FT') {
                     mid = '<span class="mini-mid is-score">' + m.home_score + ' - ' + m.away_score + '</span>';
+                    statusMarkup = '<span class="mini-status-ft">FT</span>';
                 } else {
                     mid = '<span class="mini-mid">' + (m.kickoff || 'TBD') + '</span>';
+                    statusMarkup = '<span class="mini-status-spacer" aria-hidden="true"></span>';
                 }
+
+                var homeName = abbreviateNames ? getMobileTeamName(m.home, isCompactMobile, isTabletDevice) : m.home;
+                var awayName = abbreviateNames ? getMobileTeamName(m.away, isCompactMobile, isTabletDevice) : m.away;
+
+                var homeMarkup = '<span class="mini-team home">' + homeName + '</span>';
+                var awayMarkup = '<span class="mini-team away">' + awayName + '</span>';
+
+                if (m.home_logo) {
+                    homeMarkup = '<span class="mini-team home with-logo logo-after">'
+                        + '<span class="mini-team-label">' + homeName + '</span>'
+                        + '<img class="mini-team-logo" src="' + m.home_logo + '" alt="' + m.home + ' logo" loading="lazy">'
+                        + '</span>';
+                }
+
+                if (m.away_logo) {
+                    awayMarkup = '<span class="mini-team away with-logo logo-before">'
+                        + '<img class="mini-team-logo" src="' + m.away_logo + '" alt="' + m.away + ' logo" loading="lazy">'
+                        + '<span class="mini-team-label">' + awayName + '</span>'
+                        + '</span>';
+                }
+
                 return '<li class="mini-fixture-item">'
-                    + '<span class="mini-team home">' + m.home + '</span>'
+                    + statusMarkup
+                    + homeMarkup
                     + mid
-                    + '<span class="mini-team away">' + m.away + '</span>'
+                    + awayMarkup
                     + '</li>';
             }).join('');
         }
 
         function fetchLeagueResults(dateObj, listEl, endpoint) {
             if (!listEl) return;
-            listEl.innerHTML = '<li class="mini-fixture-item"><span style="color:var(--muted);font-size:12px;">Loading results&hellip;</span></li>';
+            listEl.innerHTML = '';
+            setLeagueCardVisible(listEl, false);
             fetch(endpoint + '?date=' + toIsoDate(dateObj))
                 .then(function (r) { return r.json(); })
                 .then(function (data) { renderLeagueResults(listEl, data.matches); })
                 .catch(function () {
-                    listEl.innerHTML = '<li class="mini-fixture-item"><span style="color:var(--muted);font-size:12px;">Failed to load results.</span></li>';
+                    listEl.innerHTML = '';
+                    setLeagueCardVisible(listEl, false);
                 });
         }
 
         function refreshAllLeagueCards(dateObj) {
             fetchLeagueResults(dateObj, eplFixtureList, '/api/epl-fixtures/');
             fetchLeagueResults(dateObj, laLigaFixtureList, '/api/laliga-results/');
+            fetchLeagueResults(dateObj, bundesligaFixtureList, '/api/bundesliga-results/');
+            fetchLeagueResults(dateObj, serieAFixtureList, '/api/seriea-results/');
+            fetchLeagueResults(dateObj, ligue1FixtureList, '/api/ligue1-results/');
+            fetchLeagueResults(dateObj, eredivisieFixtureList, '/api/eredivisie-results/');
+            fetchLeagueResults(dateObj, ligaPortugalFixtureList, '/api/ligaportugal-results/');
+            fetchLeagueResults(dateObj, superLigFixtureList, '/api/superlig-results/');
+                    fetchLeagueResults(dateObj, saudiFixtureList, '/api/saudi-results/');
         }
 
         refreshAllLeagueCards(currentDate);
+        persistSelectedDate(currentDate);
 
         prevDateBtn.addEventListener('click', function () {
             currentDate.setDate(currentDate.getDate() - 1);
             setDateLabel(currentDate);
+            persistSelectedDate(currentDate);
             refreshAllLeagueCards(currentDate);
             currentCursor = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
             if (mainCalPopup && mainCalPopup.classList.contains('open')) {
@@ -2066,6 +2353,7 @@
         nextDateBtn.addEventListener('click', function () {
             currentDate.setDate(currentDate.getDate() + 1);
             setDateLabel(currentDate);
+            persistSelectedDate(currentDate);
             refreshAllLeagueCards(currentDate);
             currentCursor = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
             if (mainCalPopup && mainCalPopup.classList.contains('open')) {
