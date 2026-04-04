@@ -17,14 +17,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from livescore.views import bundesliga_results_api, csv_view, epl_fixtures_api, eredivisie_results_api, fixtures_api, home, laliga_results_api, ligaportugal_results_api, ligue1_results_api, match_detail, seriea_results_api, superlig_results_api
-from livescore.views import bundesliga_results_api, csv_view, epl_fixtures_api, eredivisie_results_api, fixtures_api, home, laliga_results_api, ligaportugal_results_api, ligue1_results_api, match_detail, saudi_results_api, seriea_results_api, superlig_results_api
+from livescore.views import bundesliga_results_api, csv_view, epl_fixtures_api, eredivisie_results_api, fixtures_api, home, laliga_results_api, ligaportugal_results_api, ligue1_results_api, match_last_five_api, saudi_results_api, seriea_results_api, superlig_results_api
 
 urlpatterns = [
     path('', home, name='home'),
-    path('match/', match_detail, name='match_detail'),
     path('csv/', csv_view, name='csv_view'),
     path('api/fixtures/', fixtures_api, name='fixtures_api'),
+    path('api/match-last-five/', match_last_five_api, name='match_last_five_api'),
     path('api/epl-fixtures/', epl_fixtures_api, name='epl_fixtures_api'),
     path('api/laliga-results/', laliga_results_api, name='laliga_results_api'),
     path('api/bundesliga-results/', bundesliga_results_api, name='bundesliga_results_api'),

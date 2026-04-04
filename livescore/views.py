@@ -9,7 +9,6 @@ import requests
 from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import render
-from django.views.decorators.clickjacking import xframe_options_sameorigin
 
 
 COUNTRY_FLAG_CODES = {
@@ -29,9 +28,19 @@ COUNTRY_FLAG_CODES = {
 
 TEAM_NAME_ALIASES = {
     "spurs": "tottenham",
-    "man utd": "man united",
+    "man utd": "manchester united",
+    "man united": "manchester united",
+    "man city": "manchester city",
+    "newcastle": "newcastle united",
+    "leeds": "leeds united",
+    "nott'm forest": "nottingham forest",
+    "espanol": "espanyol",
+    "rcd espanyol de barcelona": "espanyol",
+    "celta": "celta vigo",
+    "rc celta de vigo": "celta vigo",
     "tottenham hotspur": "tottenham",
     "wolverhampton wanderers": "wolverhampton",
+    "wolves": "wolverhampton",
     "brighton and hove albion": "brighton",
     "brighton & hove albion": "brighton",
     "brighton hove albion": "brighton",
@@ -139,6 +148,7 @@ TEAM_NAME_ALIASES = {
 # Maps football-data ASCII-garbled Turkish team names to proper display forms.
 # Keys are lowercase as they appear in the CSV (football-data source).
 DISPLAY_NAME_OVERRIDES = {
+    "afc bournemouth": "Bournemouth",
     "besiktas": "Beşiktaş",
     "buyuksehyr": "Istanbul Başakşehir",
     "istanbul basaksehir": "Istanbul Başakşehir",
@@ -585,6 +595,7 @@ def _read_livescore_fixtures_for_date(csv_path, target_date):
     seen_ids = set()
     finished_markers = {"FT", "AET", "PEN", "AP", "FULL TIME", "ENDED"}
     not_finished_markers = {"NS", "POSTP.", "PST", "CANC.", "ABN.", "TBD"}
+    excluded_markers = {"POSTP.", "PST", "CANC.", "ABN."}
 
     try:
         with csv_path.open("r", encoding="utf-8-sig", errors="replace", newline="") as f:
@@ -609,6 +620,11 @@ def _read_livescore_fixtures_for_date(csv_path, target_date):
                 away_score = (row.get("AwayScore") or "").strip()
 
                 status_upper = status.upper()
+                
+                # Skip postponed, rescheduled, cancelled, or abandoned matches
+                if status_upper in excluded_markers:
+                    continue
+
                 has_scores = home_score != "" and away_score != ""
                 is_finished = status_upper in finished_markers or (
                     has_scores and status_upper not in not_finished_markers
@@ -753,6 +769,8 @@ def _build_team_form(rows, team_name, cutoff_date, limit=5, venue=None):
         return []
 
     results = []
+    seen_matches = set()
+    team_key = _normalize_team_name(team_name)
     sorted_rows = sorted(rows, key=lambda r: (_parse_csv_date(r.get("Date")) or date.min, (r.get("Time") or "")))
     for row in reversed(sorted_rows):
         row_date = _parse_csv_date(row.get("Date"))
@@ -761,12 +779,14 @@ def _build_team_form(rows, team_name, cutoff_date, limit=5, venue=None):
 
         home = (row.get("HomeTeam") or "").strip()
         away = (row.get("AwayTeam") or "").strip()
-        if home != team_name and away != team_name:
+        home_key = _normalize_team_name(home)
+        away_key = _normalize_team_name(away)
+        if home_key != team_key and away_key != team_key:
             continue
 
         home_goals = int((row.get("FTHG") or "0").strip() or "0")
         away_goals = int((row.get("FTAG") or "0").strip() or "0")
-        is_home = home == team_name
+        is_home = home_key == team_key
         team_goals = home_goals if is_home else away_goals
         opp_goals = away_goals if is_home else home_goals
 
@@ -774,6 +794,13 @@ def _build_team_form(rows, team_name, cutoff_date, limit=5, venue=None):
         match_venue = "H" if is_home else "A"
         if venue and match_venue != venue:
             continue
+
+        match_key = (row_date.isoformat(), match_venue, team_goals, opp_goals)
+        if match_key in seen_matches:
+            continue
+        seen_matches.add(match_key)
+
+        row_dt = _fixture_sort_datetime(row)
 
         if team_goals > opp_goals:
             result = "W"
@@ -784,6 +811,7 @@ def _build_team_form(rows, team_name, cutoff_date, limit=5, venue=None):
 
         results.append(
             {
+                "_sort_dt": row_dt,
                 "date": row_date.strftime("%d %b %Y"),
                 "date_short": row_date.strftime("%d/%m"),
                 "date_year": row_date.strftime("%Y"),
@@ -797,10 +825,12 @@ def _build_team_form(rows, team_name, cutoff_date, limit=5, venue=None):
                 "over_25": (team_goals + opp_goals) > 2,
             }
         )
-        if len(results) >= limit:
-            break
 
-    return results
+    results.sort(key=lambda item: item.get("_sort_dt") or datetime.min, reverse=True)
+    trimmed = results[:limit]
+    for item in trimmed:
+        item.pop("_sort_dt", None)
+    return trimmed
 
 
 def _build_h2h(rows, home_team, away_team, cutoff_date, limit=8):
@@ -905,20 +935,200 @@ def _build_league_table(rows, league_name, cutoff_date):
     return table_rows
 
 
+def _resolve_europe_league_name(raw_league_name):
+    value = (raw_league_name or "").strip()
+    if not value:
+        return ""
+
+    normalized = _normalize_team_name(value)
+    mapping = {
+        "premier league": "Premier League",
+        "la liga": "La Liga",
+        "bundesliga": "Bundesliga",
+        "serie a": "Serie A",
+        "ligue 1": "Ligue 1",
+        "eredivisie": "Eredivisie",
+        "liga portugal": "Primeira Liga",
+        "primeira liga": "Primeira Liga",
+        "super lig": "Turkish Super Lig",
+        "turkish super lig": "Turkish Super Lig",
+        "saudi pro league": "Saudi Pro League",
+    }
+    return mapping.get(normalized, value)
+
+
+def _resolve_team_name_from_rows(rows, requested_name):
+    requested = (requested_name or "").strip()
+    if not requested:
+        return ""
+
+    requested_key = _normalize_team_name(requested)
+    for row in rows:
+        home = (row.get("HomeTeam") or "").strip()
+        away = (row.get("AwayTeam") or "").strip()
+        if home and _normalize_team_name(home) == requested_key:
+            return home
+        if away and _normalize_team_name(away) == requested_key:
+            return away
+    return requested
+
+
+def _load_logo_map_for_league(league_name):
+    table_file_by_league = {
+        "Premier League": "epl_fotmob_table_2025_2026.csv",
+        "La Liga": "laliga_fotmob_table_2025_2026.csv",
+        "Bundesliga": "bundesliga_fotmob_table_2025_2026.csv",
+        "Serie A": "seriea_fotmob_table_2025_2026.csv",
+        "Ligue 1": "ligue1_fotmob_table_2025_2026.csv",
+        "Eredivisie": "eredivisie_fotmob_table_2025_2026.csv",
+        "Primeira Liga": "ligaportugal_fotmob_table_2025_2026.csv",
+        "Turkish Super Lig": "superlig_fotmob_table_2025_2026.csv",
+        "Saudi Pro League": "saudi_fotmob_table_2025_2026.csv",
+    }
+
+    filename = table_file_by_league.get((league_name or "").strip())
+    if not filename:
+        return {}
+    return _load_league_logo_map(filename)
+
+
+def _format_last_five_display_score(item):
+    venue = (item.get("venue") or "").strip().upper()
+    team_goals = item.get("team_goals", 0)
+    opp_goals = item.get("opp_goals", 0)
+    if venue == "A":
+        return f"{opp_goals}:{team_goals}"
+    return f"{team_goals}:{opp_goals}"
+
+
+def _serialize_last_five_with_logos(rows, team_name, cutoff_date, logo_map):
+    team_form = _build_team_form(rows, team_name, cutoff_date, limit=5)
+    team_logo = logo_map.get(_normalize_team_name(team_name), "")
+
+    serialized = []
+    for item in team_form:
+        opponent = item.get("opponent") or ""
+        opponent_logo = logo_map.get(_normalize_team_name(opponent), "")
+        serialized.append(
+            {
+                "score": _format_last_five_display_score(item),
+                "result": item.get("result", ""),
+                "venue": item.get("venue", ""),
+                "team_logo": team_logo,
+                "opponent_logo": opponent_logo,
+            }
+        )
+
+    return serialized
+
+
+def _serialize_last_five_with_logos_by_venue(rows, team_name, cutoff_date, logo_map, venue):
+    team_form = _build_team_form(rows, team_name, cutoff_date, limit=5, venue=venue)
+    team_logo = logo_map.get(_normalize_team_name(team_name), "")
+
+    serialized = []
+    for item in team_form:
+        opponent = item.get("opponent") or ""
+        opponent_logo = logo_map.get(_normalize_team_name(opponent), "")
+        serialized.append(
+            {
+                "score": _format_last_five_display_score(item),
+                "result": item.get("result", ""),
+                "venue": item.get("venue", ""),
+                "team_logo": team_logo,
+                "opponent_logo": opponent_logo,
+            }
+        )
+
+    return serialized
+
+
+def match_last_five_api(request):
+    selected_date, has_explicit_date = _selected_date_from_request(request)
+    if request.GET.get("date") and not has_explicit_date:
+        return JsonResponse({"error": "Invalid date format. Use ?date=YYYY-MM-DD."}, status=400)
+
+    raw_home = (request.GET.get("home") or "").strip()
+    raw_away = (request.GET.get("away") or "").strip()
+    raw_league = (request.GET.get("league") or "").strip()
+    if not raw_home or not raw_away:
+        return JsonResponse({"error": "Missing required query parameters: home and away."}, status=400)
+
+    rows = _load_europe_csv_rows()
+    if not rows:
+        return JsonResponse(
+            {
+                "home": _display_team_name(raw_home),
+                "away": _display_team_name(raw_away),
+                "home_last_five": [],
+                "away_last_five": [],
+                "home_home_last_five": [],
+                "away_away_last_five": [],
+            }
+        )
+
+    resolved_league = _resolve_europe_league_name(raw_league)
+    league_rows = rows
+    if resolved_league:
+        filtered_rows = [row for row in rows if (row.get("Competition") or "").strip() == resolved_league]
+        if filtered_rows:
+            league_rows = filtered_rows
+
+    resolved_home = _resolve_team_name_from_rows(league_rows, raw_home)
+    resolved_away = _resolve_team_name_from_rows(league_rows, raw_away)
+    logo_map = _load_logo_map_for_league(resolved_league)
+
+    league_display = resolved_league
+    if resolved_league == "Premier League":
+        league_display = "EPL"
+
+    return JsonResponse(
+        {
+            "home": _display_team_name(resolved_home),
+            "away": _display_team_name(resolved_away),
+            "league": league_display,
+            "home_last_five": _serialize_last_five_with_logos(league_rows, resolved_home, selected_date, logo_map),
+            "away_last_five": _serialize_last_five_with_logos(league_rows, resolved_away, selected_date, logo_map),
+            "home_home_last_five": _serialize_last_five_with_logos_by_venue(league_rows, resolved_home, selected_date, logo_map, "H"),
+            "away_away_last_five": _serialize_last_five_with_logos_by_venue(league_rows, resolved_away, selected_date, logo_map, "A"),
+        }
+    )
+
+
 def epl_fixtures_api(request):
-    """Return Premier League fixtures from the LiveScore EPL fixtures CSV for a given date."""
+    """Return Premier League matches for a given date, merging forebet results and livescore fixtures."""
     selected_date, has_explicit_date = _selected_date_from_request(request)
 
     if request.GET.get("date") and not has_explicit_date:
         return JsonResponse({"error": "Invalid date format. Use ?date=YYYY-MM-DD."}, status=400)
 
     target_date = selected_date.strftime("%d/%m/%Y")
-    csv_path = Path(settings.BASE_DIR) / "data" / "epl_livescore_fixtures_2025_2026.csv"
-    matches, error = _read_livescore_fixtures_for_date(csv_path, target_date)
-    if matches is None:
-        return JsonResponse({"error": f"Could not read LiveScore EPL fixtures: {error}"}, status=500)
-
     logo_map = _load_league_logo_map("epl_fotmob_table_2025_2026.csv")
+
+    # Load completed results from forebet CSV first.
+    results_csv = Path(settings.BASE_DIR) / "data" / "epl_forebet_results_2025_2026.csv"
+    forebet_matches, _ = _read_forebet_results_for_date(results_csv, target_date)
+    forebet_matches = forebet_matches or []
+
+    # Load fixtures (upcoming and any completed livescore entries) from livescore CSV.
+    fixtures_csv = Path(settings.BASE_DIR) / "data" / "epl_livescore_fixtures_2025_2026.csv"
+    livescore_matches, error = _read_livescore_fixtures_for_date(fixtures_csv, target_date)
+    if livescore_matches is None:
+        livescore_matches = []
+
+    # Merge: forebet results take priority; livescore provides upcoming (NS) matches not in forebet.
+    forebet_keys = {
+        (_normalize_team_name(m.get("home") or ""), _normalize_team_name(m.get("away") or ""))
+        for m in forebet_matches
+    }
+    extra_fixtures = [
+        m for m in livescore_matches
+        if m.get("status") != "FT"
+        and (_normalize_team_name(m.get("home") or ""), _normalize_team_name(m.get("away") or ""))
+        not in forebet_keys
+    ]
+    matches = forebet_matches + extra_fixtures
+
     for match in matches:
         home_key = _normalize_team_name(match.get("home") or "")
         away_key = _normalize_team_name(match.get("away") or "")
@@ -1153,125 +1363,6 @@ def home(request):
             "selected_date_label": data["selected_date_label"],
         },
     )
-
-
-@xframe_options_sameorigin
-def match_detail(request):
-    league = (request.GET.get("league") or "").strip()
-    home_team = (request.GET.get("home") or "").strip()
-    away_team = (request.GET.get("away") or "").strip()
-    selected_date_raw = (request.GET.get("date") or "").strip()
-
-    try:
-        selected_date = datetime.strptime(selected_date_raw, "%Y-%m-%d").date() if selected_date_raw else date.today()
-    except ValueError:
-        selected_date = date.today()
-
-    rows = _load_europe_csv_rows()
-
-    form_limit = 5
-    fetch_limit = form_limit + 1  # Buffer for FT exclusion
-
-    home_form = _build_team_form(rows, home_team, selected_date, limit=fetch_limit)
-    away_form = _build_team_form(rows, away_team, selected_date, limit=fetch_limit)
-    home_form_home_only = _build_team_form(rows, home_team, selected_date, limit=fetch_limit, venue="H")
-    away_form_away_only = _build_team_form(rows, away_team, selected_date, limit=fetch_limit, venue="A")
-    h2h_rows = _build_h2h(rows, home_team, away_team, selected_date)
-    table_rows = _build_league_table(rows, league, selected_date)
-
-    match_score = "vs"
-    match_status = "Scheduled"
-    kickoff_time = "TBD"
-    for row in rows:
-        row_date = _parse_csv_date(row.get("Date"))
-        if row_date != selected_date:
-            continue
-
-        row_home = (row.get("HomeTeam") or "").strip()
-        row_away = (row.get("AwayTeam") or "").strip()
-        row_competition = (row.get("Competition") or "").strip()
-        is_same_match = row_home == home_team and row_away == away_team
-        is_same_league = not league or row_competition == league
-        if not (is_same_match and is_same_league):
-            continue
-
-        kickoff_time = (row.get("Time") or "").strip() or "TBD"
-
-        if _match_played(row):
-            home_goals = int((row.get("FTHG") or "0").strip() or "0")
-            away_goals = int((row.get("FTAG") or "0").strip() or "0")
-            match_score = f"{home_goals}-{away_goals}"
-            match_status = "FT"
-        break
-
-    if match_status == "FT":
-        selected_date_label = selected_date.strftime("%d %b %Y")
-        home_goals, away_goals = match_score.split("-")
-        away_perspective_score = f"{away_goals}-{home_goals}"
-
-        home_form = [
-            item
-            for item in home_form
-            if not (
-                item.get("date") == selected_date_label
-                and item.get("venue") == "H"
-                and item.get("opponent") == away_team
-                and item.get("score") == match_score
-            )
-        ][:form_limit]
-
-        away_form = [
-            item
-            for item in away_form
-            if not (
-                item.get("date") == selected_date_label
-                and item.get("venue") == "A"
-                and item.get("opponent") == home_team
-                and item.get("score") == away_perspective_score
-            )
-        ][:form_limit]
-
-        home_form_home_only = [
-            item
-            for item in home_form_home_only
-            if not (
-                item.get("date") == selected_date_label
-                and item.get("opponent") == away_team
-                and item.get("score") == match_score
-            )
-        ][:form_limit]
-
-        away_form_away_only = [
-            item
-            for item in away_form_away_only
-            if not (
-                item.get("date") == selected_date_label
-                and item.get("opponent") == home_team
-                and item.get("score") == away_perspective_score
-            )
-        ][:form_limit]
-    else:
-        home_form = home_form[:form_limit]
-        away_form = away_form[:form_limit]
-        home_form_home_only = home_form_home_only[:form_limit]
-        away_form_away_only = away_form_away_only[:form_limit]
-
-    context = {
-        "league": league or "League",
-        "home_team": home_team or "Home",
-        "away_team": away_team or "Away",
-        "selected_date": selected_date.strftime("%d %b"),
-        "home_form": home_form,
-        "away_form": away_form,
-        "home_form_home_only": home_form_home_only,
-        "away_form_away_only": away_form_away_only,
-        "h2h_rows": h2h_rows,
-        "table_rows": table_rows,
-        "match_score": match_score,
-        "match_status": match_status,
-        "kickoff_time": kickoff_time,
-    }
-    return render(request, "match_detail.html", context)
 
 
 def csv_view(request):

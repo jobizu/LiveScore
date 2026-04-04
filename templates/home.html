@@ -309,6 +309,277 @@
             border-bottom: none;
         }
 
+        .mini-fixture-item.clickable {
+            cursor: pointer;
+        }
+
+        .mini-fixture-item.clickable:hover {
+            background: rgb(33 33 33);
+        }
+
+        .mini-fixture-item.clickable:focus-visible {
+            outline: 2px solid var(--green);
+            outline-offset: -2px;
+        }
+
+        .match-detail-shell {
+            display: none;
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 14px 20px 0;
+        }
+
+        .match-detail-shell.show {
+            display: block;
+        }
+
+        .match-detail-card {
+            border: 1px solid #353c45;
+            border-radius: 12px;
+            background: rgb(26 26 26);
+            padding: 16px;
+        }
+
+        .match-detail-top {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 6px;
+        }
+
+        .match-detail-back {
+            border: none;
+            background: transparent;
+            color: var(--text);
+            border-radius: 0;
+            width: auto;
+            height: auto;
+            padding: 0;
+            font-family: var(--font-walsheim);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .match-detail-teams {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .match-detail-team {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            min-width: 0;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .match-detail-team.home {
+            justify-content: center;
+            text-align: center;
+        }
+
+        .match-detail-team.away {
+            justify-content: center;
+            text-align: center;
+        }
+
+        .match-detail-team img {
+            width: 34px;
+            height: 34px;
+            object-fit: contain;
+            flex-shrink: 0;
+        }
+
+        .match-detail-team-name {
+            display: block;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .match-detail-mid {
+            border: 1px solid #4a4a4a;
+            background: rgb(45 45 45);
+            border-radius: 999px;
+            padding: 6px 10px;
+            font-size: 12px;
+            font-weight: 700;
+            min-width: 86px;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .match-detail-tabs {
+            margin-top: 14px;
+            padding-top: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            position: relative;
+        }
+
+        .match-detail-tab {
+            border: none;
+            background: transparent;
+            color: var(--muted);
+            font-family: var(--font-walsheim);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            padding: 6px 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .match-detail-tab.is-active {
+            color: var(--text);
+        }
+
+        .match-detail-tab-indicator {
+            position: absolute;
+            bottom: -16px;
+            left: 0;
+            height: 2px;
+            width: 0;
+            background: rgb(97 223 110);
+            border-radius: 999px;
+            transition: left 0.22s ease, width 0.22s ease;
+        }
+
+        .last-five-shell {
+            margin-top: 12px;
+            border: 1px solid #000;
+            border-radius: 12px;
+            background: #000;
+            padding: 12px;
+        }
+
+        .last-five-shell-title {
+            margin: 0 0 10px 0;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+        }
+
+        .last-five-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .last-five-col {
+            border: 1px solid #353c45;
+            border-radius: 12px;
+            background: rgb(20 20 20);
+            overflow: hidden;
+        }
+
+        .last-five-team-label {
+            margin: 0;
+            padding: 8px 10px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text);
+            border-bottom: 1px solid #353c45;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .last-five-label-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 10px;
+            border-bottom: 1px solid #353c45;
+            flex-wrap: wrap;
+        }
+
+        .last-five-league-chip {
+            display: inline-block;
+            padding: 4px 10px;
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--muted);
+            background: rgba(53, 60, 69, 0.4);
+            border: 1px solid rgba(53, 60, 69, 0.6);
+            border-radius: 999px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .last-five-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .last-five-row {
+            display: grid;
+            grid-template-columns: 20px auto 20px;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 8px 10px;
+            border-bottom: 1px solid #2f2f2f;
+        }
+
+        .last-five-row:last-child {
+            border-bottom: none;
+        }
+
+        .last-five-row img {
+            width: 18px;
+            height: 18px;
+            object-fit: contain;
+        }
+
+        .last-five-score {
+            color: var(--text);
+            font-size: 12px;
+            font-weight: 700;
+            min-width: 34px;
+            text-align: center;
+            padding: 3px 8px;
+            border-radius: 999px;
+            background: #2c3138;
+        }
+
+        .last-five-score.score-w {
+            background: rgba(97, 223, 110, 0.28);
+            color: #dfffe4;
+        }
+
+        .last-five-score.score-d {
+            background: rgba(255, 207, 102, 0.3);
+            color: #fff3cf;
+        }
+
+        .last-five-score.score-l {
+            background: rgba(255, 107, 128, 0.28);
+            color: #ffe2e8;
+        }
+
+        .last-five-empty {
+            padding: 10px;
+            color: var(--muted);
+            font-size: 12px;
+            text-align: center;
+        }
+
         .mini-status-ft {
             color: #fff;
             font-size: 7px;
@@ -1685,6 +1956,7 @@
             .icon-btn svg { width: 1.6rem; height: 1.6rem; }
             .header-search { display: none; }
             .icon-btn { padding: 3px; }
+            body.mobile-detail-mode .site-header { display: none; }
             .main-content { padding: 10px; }
             .date-nav-card { padding: 9px 10px; border-radius: 10px; }
             .date-nav-label { font-size: 12px; }
@@ -1695,6 +1967,53 @@
 
             .mini-mid { font-size: 0.7rem; }
             .mini-team { font-size: 10px; }
+            .match-detail-shell {
+                max-width: none;
+                width: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            .match-detail-card {
+                padding: 12px;
+                border-radius: 0;
+            }
+            .match-detail-tab-indicator { bottom: -12px; }
+            .last-five-shell {
+                margin-top: 8px;
+                border-radius: 0;
+                padding: 10px;
+            }
+            .last-five-shell-title {
+                font-size: 12px;
+                margin-bottom: 8px;
+            }
+            .last-five-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+            .last-five-col {
+                border-radius: 12px;
+            }
+            .last-five-team-label {
+                padding: 7px 8px;
+                font-size: 11px;
+            }
+            .last-five-row {
+                grid-template-columns: 18px auto 18px;
+                gap: 6px;
+                padding: 7px 6px;
+            }
+            .last-five-row img {
+                width: 16px;
+                height: 16px;
+            }
+            .last-five-score {
+                min-width: 30px;
+                font-size: 11px;
+            }
+            .match-detail-team { font-size: 12px; }
+            .match-detail-team img { width: 28px; height: 28px; }
+            .match-detail-mid { font-size: 12px; min-width: 74px; }
             .footer-links { grid-template-columns: 1fr; }
             .footer-bottom { align-items: flex-start; }
         }
@@ -1752,8 +2071,74 @@
         </div>
     </header>
 
+    <section class="match-detail-shell" id="inlineMatchDetail" aria-live="polite">
+        <article class="match-detail-card">
+            <div class="match-detail-top">
+                <button class="match-detail-back" id="detailBackBtn" type="button" aria-label="Back to fixtures">
+                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <line x1="19" y1="12" x2="9" y2="12"/>
+                        <polyline points="12 15 9 12 12 9"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="match-detail-teams">
+                <div class="match-detail-team home">
+                    <img id="detailHomeLogo" alt="Home logo" loading="lazy" style="display:none;">
+                    <span class="match-detail-team-name" id="detailHomeName">Home</span>
+                </div>
+                <div class="match-detail-mid" id="detailMid">TBD</div>
+                <div class="match-detail-team away">
+                    <img id="detailAwayLogo" alt="Away logo" loading="lazy" style="display:none;">
+                    <span class="match-detail-team-name" id="detailAwayName">Away</span>
+                </div>
+            </div>
+            <div class="match-detail-tabs" role="tablist" aria-label="Match detail tabs">
+                <button class="match-detail-tab is-active" type="button" role="tab" aria-selected="true" data-detail-tab="form">Form</button>
+                <button class="match-detail-tab" type="button" role="tab" aria-selected="false" data-detail-tab="h2h">H2H</button>
+                <button class="match-detail-tab" type="button" role="tab" aria-selected="false" data-detail-tab="table">Table</button>
+                <span class="match-detail-tab-indicator" id="detailTabIndicator" aria-hidden="true"></span>
+            </div>
+        </article>
+
+        <article class="last-five-shell" id="lastFiveShell">
+            <h3 class="last-five-shell-title">Last 5 Matches</h3>
+            <div class="last-five-grid">
+                <section class="last-five-col">
+                    <div class="last-five-label-row">
+                        <span class="last-five-league-chip" id="lastFiveLeagueChip"></span>
+                    </div>
+                    <ul class="last-five-list" id="lastFiveHomeList"></ul>
+                </section>
+                <section class="last-five-col">
+                    <div class="last-five-label-row">
+                        <span class="last-five-league-chip" id="lastFiveLeagueChip2"></span>
+                    </div>
+                    <ul class="last-five-list" id="lastFiveAwayList"></ul>
+                </section>
+            </div>
+        </article>
+
+        <article class="last-five-shell" id="venueLastFiveShell">
+            <h3 class="last-five-shell-title">Last 5 Home/Away Matches</h3>
+            <div class="last-five-grid">
+                <section class="last-five-col">
+                    <div class="last-five-label-row">
+                        <span class="last-five-league-chip" id="venueLastFiveLeagueChip"></span>
+                    </div>
+                    <ul class="last-five-list" id="venueLastFiveHomeList"></ul>
+                </section>
+                <section class="last-five-col">
+                    <div class="last-five-label-row">
+                        <span class="last-five-league-chip" id="venueLastFiveLeagueChip2"></span>
+                    </div>
+                    <ul class="last-five-list" id="venueLastFiveAwayList"></ul>
+                </section>
+            </div>
+        </article>
+    </section>
+
     <div class="layout">
-        <section class="main">
+        <section class="main" id="mainSection">
             <div class="main-content">
                 <div class="date-nav-card" aria-label="Date navigation">
                     <button class="date-nav-btn" id="mainPrevDateBtn" type="button" aria-label="Previous day">
@@ -1990,6 +2375,7 @@
     const STORAGE_KEY = 'dimba:theme';
     const DATE_STORAGE_KEY = 'dimba:selected-date';
     const LEGACY_DATE_STORAGE_KEY = 'dimba:selectedDate';
+    const DETAIL_PAYLOAD_KEY = 'dimba:detail-payload';
     const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     const DAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 
@@ -2188,7 +2574,25 @@
         const eredivisieFixtureList = document.getElementById('eredivisieFixtureList');
         const ligaPortugalFixtureList = document.getElementById('ligaPortugalFixtureList');
         const superLigFixtureList = document.getElementById('superLigFixtureList');
-    const saudiFixtureList = document.getElementById('saudiFixtureList');
+        const saudiFixtureList = document.getElementById('saudiFixtureList');
+        const mainSection = document.getElementById('mainSection');
+        const inlineMatchDetail = document.getElementById('inlineMatchDetail');
+        const detailBackBtn = document.getElementById('detailBackBtn');
+        const detailHomeName = document.getElementById('detailHomeName');
+        const detailAwayName = document.getElementById('detailAwayName');
+        const detailHomeLogo = document.getElementById('detailHomeLogo');
+        const detailAwayLogo = document.getElementById('detailAwayLogo');
+        const detailMid = document.getElementById('detailMid');
+        const detailTabs = Array.from(document.querySelectorAll('.match-detail-tab'));
+        const detailTabIndicator = document.getElementById('detailTabIndicator');
+        const lastFiveLeagueChip = document.getElementById('lastFiveLeagueChip');
+        const lastFiveLeagueChip2 = document.getElementById('lastFiveLeagueChip2');
+        const lastFiveHomeList = document.getElementById('lastFiveHomeList');
+        const lastFiveAwayList = document.getElementById('lastFiveAwayList');
+        const venueLastFiveLeagueChip = document.getElementById('venueLastFiveLeagueChip');
+        const venueLastFiveLeagueChip2 = document.getElementById('venueLastFiveLeagueChip2');
+        const venueLastFiveAwayList = document.getElementById('venueLastFiveAwayList');
+        const venueLastFiveHomeList = document.getElementById('venueLastFiveHomeList');
 
         function toIsoDate(d) {
             const y = d.getFullYear();
@@ -2211,6 +2615,134 @@
             var card = listEl.closest('.mini-league-card');
             if (!card) return;
             card.style.display = isVisible ? '' : 'none';
+        }
+
+        function hideInlineMatchDetail() {
+            if (inlineMatchDetail) {
+                inlineMatchDetail.classList.remove('show');
+            }
+            if (mainSection) {
+                mainSection.style.display = '';
+            }
+            document.body.classList.remove('mobile-detail-mode');
+            try { sessionStorage.removeItem(DETAIL_PAYLOAD_KEY); } catch(e) {}
+        }
+
+        function getDetailTeamName(name) {
+            var raw = (name || '').trim();
+            if (!window.matchMedia('(max-width: 560px)').matches) {
+                return raw;
+            }
+
+            var replacements = {
+                'manchester united': 'Man United',
+                'newcastle united': 'Newcastle',
+                'manchester city': 'Man City'
+            };
+
+            return replacements[raw.toLowerCase()] || raw;
+        }
+
+        function showInlineMatchDetail(payload) {
+            if (!payload || !inlineMatchDetail || !mainSection) return;
+
+            detailTabs.forEach(function (item) {
+                var isForm = item.getAttribute('data-detail-tab') === 'form';
+                item.classList.toggle('is-active', isForm);
+                item.setAttribute('aria-selected', isForm ? 'true' : 'false');
+            });
+
+            detailHomeName.textContent = getDetailTeamName(payload.home || 'Home');
+            detailAwayName.textContent = getDetailTeamName(payload.away || 'Away');
+            detailMid.textContent = payload.mid || 'TBD';
+
+            if (payload.homeLogo) {
+                detailHomeLogo.src = payload.homeLogo;
+                detailHomeLogo.style.display = '';
+            } else {
+                detailHomeLogo.removeAttribute('src');
+                detailHomeLogo.style.display = 'none';
+            }
+
+            if (payload.awayLogo) {
+                detailAwayLogo.src = payload.awayLogo;
+                detailAwayLogo.style.display = '';
+            } else {
+                detailAwayLogo.removeAttribute('src');
+                detailAwayLogo.style.display = 'none';
+            }
+
+            mainSection.style.display = 'none';
+            inlineMatchDetail.classList.add('show');
+            fetchLastFive(payload);
+            document.body.classList.add('mobile-detail-mode');
+            requestAnimationFrame(updateDetailTabIndicator);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            try { sessionStorage.setItem(DETAIL_PAYLOAD_KEY, JSON.stringify(payload)); } catch(e) {}
+        }
+
+        function renderLastFiveList(listEl, entries) {
+            if (!listEl) return;
+            if (!entries || !entries.length) {
+                listEl.innerHTML = '<li class="last-five-empty">No recent results</li>';
+                return;
+            }
+
+            listEl.innerHTML = entries.map(function (item) {
+                var venue = String(item.venue || '').trim().toUpperCase();
+                var teamLogoHtml = item.team_logo ? '<img src="' + item.team_logo + '" alt="Team logo" loading="lazy">' : '<span></span>';
+                var opponentLogoHtml = item.opponent_logo ? '<img src="' + item.opponent_logo + '" alt="Opponent logo" loading="lazy">' : '<span></span>';
+                var leftLogo = venue === 'H' ? teamLogoHtml : opponentLogoHtml;
+                var rightLogo = venue === 'A' ? teamLogoHtml : opponentLogoHtml;
+                var resultClass = String(item.result || '').trim().toLowerCase();
+                var rowClass = 'last-five-row';
+                if (resultClass === 'w' || resultClass === 'd' || resultClass === 'l') {
+                    rowClass += ' form-' + resultClass;
+                }
+                var scoreClass = 'last-five-score';
+                if (resultClass === 'w' || resultClass === 'd' || resultClass === 'l') {
+                    scoreClass += ' score-' + resultClass;
+                }
+                return '<li class="' + rowClass + '">'
+                    + leftLogo
+                    + '<span class="' + scoreClass + '">' + (item.score || '-') + '</span>'
+                    + rightLogo
+                    + '</li>';
+            }).join('');
+        }
+
+        function fetchLastFive(payload) {
+            if (!payload) return;
+            if (lastFiveHomeList) lastFiveHomeList.innerHTML = '<li class="last-five-empty">Loading...</li>';
+            if (lastFiveAwayList) lastFiveAwayList.innerHTML = '<li class="last-five-empty">Loading...</li>';
+            if (venueLastFiveAwayList) venueLastFiveAwayList.innerHTML = '<li class="last-five-empty">Loading...</li>';
+            if (venueLastFiveHomeList) venueLastFiveHomeList.innerHTML = '<li class="last-five-empty">Loading...</li>';
+
+            var params = new URLSearchParams({
+                date: payload.selectedDate || '',
+                league: payload.league || '',
+                home: payload.home || '',
+                away: payload.away || ''
+            });
+
+            fetch('/api/match-last-five/?' + params.toString())
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    if (lastFiveLeagueChip) lastFiveLeagueChip.textContent = data.league || '';
+                    if (lastFiveLeagueChip2) lastFiveLeagueChip2.textContent = data.league || '';
+                    if (venueLastFiveLeagueChip) venueLastFiveLeagueChip.textContent = data.league || '';
+                    if (venueLastFiveLeagueChip2) venueLastFiveLeagueChip2.textContent = data.league || '';
+                    renderLastFiveList(lastFiveHomeList, data.home_last_five || []);
+                    renderLastFiveList(lastFiveAwayList, data.away_last_five || []);
+                    renderLastFiveList(venueLastFiveAwayList, data.away_away_last_five || []);
+                    renderLastFiveList(venueLastFiveHomeList, data.home_home_last_five || []);
+                })
+                .catch(function () {
+                    if (lastFiveHomeList) lastFiveHomeList.innerHTML = '<li class="last-five-empty">Could not load</li>';
+                    if (lastFiveAwayList) lastFiveAwayList.innerHTML = '<li class="last-five-empty">Could not load</li>';
+                    if (venueLastFiveAwayList) venueLastFiveAwayList.innerHTML = '<li class="last-five-empty">Could not load</li>';
+                    if (venueLastFiveHomeList) venueLastFiveHomeList.innerHTML = '<li class="last-five-empty">Could not load</li>';
+                });
         }
 
         function getMobileTeamName(name, isCompactMobile, isTabletDevice) {
@@ -2258,7 +2790,7 @@
             return raw;
         }
 
-        function renderLeagueResults(listEl, matches) {
+        function renderLeagueResults(listEl, matches, leagueName, selectedIsoDate) {
             if (!listEl) return;
             if (!matches || matches.length === 0) {
                 listEl.innerHTML = '';
@@ -2302,7 +2834,19 @@
                         + '</span>';
                 }
 
-                return '<li class="mini-fixture-item">'
+                var midText = m.status === 'FT' ? (m.home_score + ' - ' + m.away_score + ' FT') : (m.kickoff || 'TBD');
+                var matchPayload = encodeURIComponent(JSON.stringify({
+                    league: leagueName || 'League',
+                    home: m.home || '',
+                    away: m.away || '',
+                    homeLogo: m.home_logo || '',
+                    awayLogo: m.away_logo || '',
+                    mid: midText,
+                    dateLabel: selectedIsoDate,
+                    selectedDate: selectedIsoDate
+                }));
+
+                return '<li class="mini-fixture-item clickable" role="button" tabindex="0" data-match-payload="' + matchPayload + '">'
                     + statusMarkup
                     + homeMarkup
                     + mid
@@ -2311,13 +2855,14 @@
             }).join('');
         }
 
-        function fetchLeagueResults(dateObj, listEl, endpoint) {
+        function fetchLeagueResults(dateObj, listEl, endpoint, leagueName) {
             if (!listEl) return;
             listEl.innerHTML = '';
             setLeagueCardVisible(listEl, false);
-            fetch(endpoint + '?date=' + toIsoDate(dateObj))
+            var isoDate = toIsoDate(dateObj);
+            fetch(endpoint + '?date=' + isoDate)
                 .then(function (r) { return r.json(); })
-                .then(function (data) { renderLeagueResults(listEl, data.matches); })
+                .then(function (data) { renderLeagueResults(listEl, data.matches, leagueName, isoDate); })
                 .catch(function () {
                     listEl.innerHTML = '';
                     setLeagueCardVisible(listEl, false);
@@ -2325,15 +2870,15 @@
         }
 
         function refreshAllLeagueCards(dateObj) {
-            fetchLeagueResults(dateObj, eplFixtureList, '/api/epl-fixtures/');
-            fetchLeagueResults(dateObj, laLigaFixtureList, '/api/laliga-results/');
-            fetchLeagueResults(dateObj, bundesligaFixtureList, '/api/bundesliga-results/');
-            fetchLeagueResults(dateObj, serieAFixtureList, '/api/seriea-results/');
-            fetchLeagueResults(dateObj, ligue1FixtureList, '/api/ligue1-results/');
-            fetchLeagueResults(dateObj, eredivisieFixtureList, '/api/eredivisie-results/');
-            fetchLeagueResults(dateObj, ligaPortugalFixtureList, '/api/ligaportugal-results/');
-            fetchLeagueResults(dateObj, superLigFixtureList, '/api/superlig-results/');
-                    fetchLeagueResults(dateObj, saudiFixtureList, '/api/saudi-results/');
+            fetchLeagueResults(dateObj, eplFixtureList, '/api/epl-fixtures/', 'Premier League');
+            fetchLeagueResults(dateObj, laLigaFixtureList, '/api/laliga-results/', 'La Liga');
+            fetchLeagueResults(dateObj, bundesligaFixtureList, '/api/bundesliga-results/', 'Bundesliga');
+            fetchLeagueResults(dateObj, serieAFixtureList, '/api/seriea-results/', 'Serie A');
+            fetchLeagueResults(dateObj, ligue1FixtureList, '/api/ligue1-results/', 'Ligue 1');
+            fetchLeagueResults(dateObj, eredivisieFixtureList, '/api/eredivisie-results/', 'Eredivisie');
+            fetchLeagueResults(dateObj, ligaPortugalFixtureList, '/api/ligaportugal-results/', 'Liga Portugal');
+            fetchLeagueResults(dateObj, superLigFixtureList, '/api/superlig-results/', 'Super Lig');
+            fetchLeagueResults(dateObj, saudiFixtureList, '/api/saudi-results/', 'Saudi Pro League');
         }
 
         refreshAllLeagueCards(currentDate);
@@ -2383,6 +2928,71 @@
                 toggle.setAttribute('aria-expanded', nextOpen ? 'true' : 'false');
             });
         });
+
+        detailTabs.forEach(function (tab) {
+            tab.addEventListener('click', function () {
+                detailTabs.forEach(function (item) {
+                    var isActive = item === tab;
+                    item.classList.toggle('is-active', isActive);
+                    item.setAttribute('aria-selected', isActive ? 'true' : 'false');
+                });
+                updateDetailTabIndicator();
+            });
+        });
+
+        function updateDetailTabIndicator() {
+            if (!detailTabIndicator) return;
+            var activeTab = document.querySelector('.match-detail-tab.is-active');
+            if (!activeTab) {
+                detailTabIndicator.style.width = '0';
+                return;
+            }
+            detailTabIndicator.style.left = activeTab.offsetLeft + 'px';
+            detailTabIndicator.style.width = activeTab.offsetWidth + 'px';
+        }
+
+        updateDetailTabIndicator();
+        window.addEventListener('resize', updateDetailTabIndicator);
+
+        (function restoreDetailOnReload() {
+            try {
+                var saved = sessionStorage.getItem(DETAIL_PAYLOAD_KEY);
+                if (saved) { showInlineMatchDetail(JSON.parse(saved)); }
+            } catch(e) {}
+        }());
+
+        if (detailBackBtn) {
+            detailBackBtn.addEventListener('click', function () {
+                hideInlineMatchDetail();
+            });
+        }
+
+        document.addEventListener('click', function (event) {
+            var matchRow = event.target.closest('.mini-fixture-item.clickable');
+            if (!matchRow) return;
+            var raw = matchRow.getAttribute('data-match-payload') || '';
+            if (!raw) return;
+            try {
+                showInlineMatchDetail(JSON.parse(decodeURIComponent(raw)));
+            } catch (err) {
+                // Ignore malformed payload and keep list view visible.
+            }
+        });
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key !== 'Enter' && event.key !== ' ') return;
+            var matchRow = event.target.closest('.mini-fixture-item.clickable');
+            if (!matchRow) return;
+            event.preventDefault();
+            var raw = matchRow.getAttribute('data-match-payload') || '';
+            if (!raw) return;
+            try {
+                showInlineMatchDetail(JSON.parse(decodeURIComponent(raw)));
+            } catch (err) {
+                // Ignore malformed payload and keep list view visible.
+            }
+        });
+
     }
 }());
 </script>
